@@ -1,0 +1,2690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Miner Pro</title>
+    <style>
+        :root {
+            --primary: #3498db;
+            --bg-dark: #1a1a2e;
+            --bg-medium: #16213e;
+            --bg-light: #0f3460;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --gold: #f1c40f;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-dark);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+            height: 100vh;
+        }
+        .game-header {
+            text-align: center;
+            margin: 10px 0;
+            text-shadow: 0 0 10px rgba(52, 152, 219, 0.7);
+        }
+        .game-container {
+            position: relative;
+            width: 640px;
+            height: 480px;
+            margin-top: 10px;
+            box-shadow: 0 0 30px rgba(52, 152, 219, 0.3);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .ui-container {
+            display: flex;
+            justify-content: space-between;
+            width: 640px;
+            padding: 10px;
+            background-color: var(--bg-medium);
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+        }
+        .resources {
+            display: flex;
+            align-items: center;
+        }
+        .resource {
+            display: flex;
+            align-items: center;
+            margin-right: 15px;
+            padding: 5px 10px;
+            background-color: var(--bg-light);
+            border-radius: 20px;
+        }
+        .resource-icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 5px;
+            border-radius: 50%;
+        }
+        .stone-icon { background-color: #777; }
+        .copper-icon { background-color: #CD7F32; }
+        .silver-icon { background-color: #C0C0C0; }
+        .gold-icon { background-color: #FFD700; }
+        .energy-icon { background-color: #2ecc71; }
+        .player-stats {
+            display: flex;
+            align-items: center;
+        }
+        #game-svg {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #1e3c72, #2a5298);
+        }
+        .tooltip {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-size: 14px;
+            pointer-events: none;
+            z-index: 100;
+            display: none;
+        }
+        .ui-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(22, 33, 62, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--primary);
+            box-shadow: 0 0 20px rgba(52, 152, 219, 0.5);
+            display: none;
+            width: 300px; /* Increased width */
+            max-height: 400px; /* Added max height */
+            overflow-y: auto; /* Added vertical scrolling */
+            z-index: 1000; /* Ensure it's above other elements */
+        }
+        .panel-title {
+            margin-top: 0;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+        .shop-item, .crafting-item {
+            cursor: pointer;
+            padding: 8px;
+            margin: 8px 0;
+            background-color: var(--bg-light);
+            border-radius: 4px;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap; /* Allow items to wrap */
+        }
+        .shop-item:hover, .crafting-item:hover {
+            background-color: var(--primary);
+            transform: translateY(-2px);
+        }
+        .button {
+            background-color: var(--primary);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-left: 5px;
+        }
+        .button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        .tab-container {
+            display: flex;
+            margin-bottom: 10px;
+            flex-wrap: wrap; /* Allow tabs to wrap */
+        }
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 5px;
+            cursor: pointer;
+            background-color: var(--bg-light);
+            border-right: 1px solid var(--bg-medium);
+            min-width: 60px; /* Ensure minimum width for tabs */
+        }
+        .tab:last-child {
+            border-right: none;
+        }
+        .tab.active {
+            background-color: var(--primary);
+        }
+        .tab-content {
+            display: none;
+            overflow-y: auto; /* Add scroll for tab content */
+            max-height: 320px; /* Maximum height for scrollable content */
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .progress-bar {
+            height: 5px;
+            background-color: var(--bg-light);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 2px;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .level-indicator {
+            display: flex;
+            align-items: center;
+            background-color: var(--bg-light);
+            padding: 5px 12px;
+            border-radius: 20px;
+        }
+        .xp-bar {
+            width: 60px;
+            height: 6px;
+            background-color: var(--bg-dark);
+            border-radius: 3px;
+            margin-left: 8px;
+            overflow: hidden;
+        }
+        .xp-fill {
+            height: 100%;
+            background-color: var(--success);
+            width: 0%;
+        }
+        .controls {
+            margin-top: 10px;
+            text-align: center;
+            color: #aaa;
+            font-size: 14px;
+        }
+        .gem-item {
+            position: relative;
+            padding-left: 20px;
+        }
+        .gem-dot {
+            position: absolute;
+            left: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .equipped {
+            border: 2px solid var(--success);
+        }
+        /* Quest System Styles */
+        .quest-notification {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(22, 33, 62, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid var(--gold);
+            box-shadow: 0 0 20px rgba(241, 196, 15, 0.5);
+            color: white;
+            text-align: center;
+            z-index: 100;
+            display: none;
+            animation: questPop 0.5s forwards;
+        }
+        @keyframes questPop {
+            0% { transform: translate(-50%, -20px); opacity: 0; }
+            100% { transform: translate(-50%, 0); opacity: 1; }
+        }
+        .quest-item {
+            cursor: pointer;
+            padding: 8px;
+            margin: 8px 0;
+            background-color: var(--bg-light);
+            border-radius: 4px;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .quest-item:hover {
+            background-color: var(--primary);
+            transform: translateY(-2px);
+        }
+        .quest-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .quest-description {
+            font-size: 12px;
+            color: #ccc;
+            margin-bottom: 5px;
+        }
+        .quest-progress-bar {
+            height: 5px;
+            background-color: var(--bg-dark);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        .quest-progress-fill {
+            height: 100%;
+            background-color: var(--gold);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .quest-reward {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            font-size: 12px;
+            color: var(--gold);
+        }
+        .quest-complete-indicator {
+            position: absolute;
+            right: -5px;
+            top: -5px;
+            width: 15px;
+            height: 15px;
+            background-color: var(--success);
+            border-radius: 50%;
+            display: none;
+        }
+        .complete .quest-complete-indicator {
+            display: block;
+        }
+        .complete .quest-progress-fill {
+            background-color: var(--success);
+        }
+        .quest-claim-button {
+            background-color: var(--gold);
+            color: var(--bg-dark);
+            border: none;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 5px;
+            display: none;
+        }
+        .complete .quest-claim-button {
+            display: inline-block;
+        }
+        /* Energy System Styles */
+        .energy-bar-container {
+            width: 100%;
+            height: 8px;
+            background-color: var(--bg-dark);
+            border-radius: 4px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        .energy-bar {
+            height: 100%;
+            background-color: #2ecc71;
+            transition: width 0.3s;
+        }
+        /* Skills and Perks System Styles */
+        .skill-tree {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .skill-item {
+            background-color: var(--bg-light);
+            border-radius: 4px;
+            padding: 8px;
+            position: relative;
+            transition: all 0.3s;
+        }
+        .skill-item:hover {
+            background-color: var(--primary);
+        }
+        .skill-icon {
+            font-size: 18px;
+            margin-right: 5px;
+        }
+        .skill-name {
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+        .skill-description {
+            font-size: 12px;
+            color: #ccc;
+            margin: 5px 0;
+        }
+        .skill-level {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .skill-level-text {
+            font-size: 12px;
+        }
+        .skill-progress {
+            flex-grow: 1;
+            height: 5px;
+            background-color: var(--bg-dark);
+            border-radius: 3px;
+            margin: 0 5px;
+            position: relative;
+        }
+        .skill-progress-fill {
+            height: 100%;
+            background-color: var(--primary);
+            border-radius: 3px;
+        }
+        .skill-upgrade-btn {
+            background-color: var(--primary);
+            border: none;
+            color: white;
+            padding: 3px 5px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .skill-upgrade-btn:disabled {
+            background-color: #888;
+            cursor: not-allowed;
+        }
+        .perk-list {
+            margin-top: 15px;
+        }
+        .perk-item {
+            background-color: var(--bg-light);
+            border-radius: 4px;
+            padding: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+        .perk-item.locked {
+            opacity: 0.6;
+        }
+        .perk-icon {
+            font-size: 20px;
+            margin-right: 8px;
+        }
+        .perk-info {
+            flex-grow: 1;
+        }
+        .perk-name {
+            font-weight: bold;
+        }
+        .perk-description {
+            font-size: 12px;
+            color: #ccc;
+        }
+        .perk-level {
+            font-size: 12px;
+            color: #f1c40f;
+        }
+        .skill-points {
+            background-color: var(--bg-medium);
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .skill-points-title {
+            font-weight: bold;
+        }
+        .skill-points-value {
+            background-color: var(--primary);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+        .attribute-change {
+            position: absolute;
+            color: white;
+            font-weight: bold;
+            pointer-events: none;
+            animation: floatUp 1.5s forwards;
+            z-index: 100;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-40px); opacity: 0; }
+        }
+        .level-up-notification {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 30px rgba(52, 152, 219, 0.7);
+            z-index: 1000;
+            text-align: center;
+            animation: popIn 0.5s forwards;
+        }
+        @keyframes popIn {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+        .level-up-title {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+        .level-up-rewards {
+            margin: 15px 0;
+        }
+        .level-up-reward {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .level-up-reward-icon {
+            margin-right: 5px;
+            font-size: 18px;
+        }
+        .close-level-up {
+            background-color: var(--primary);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .version {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 12px;
+        }
+        
+        /* Custom scrollbar styles */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2980b9;
+        }
+        
+        /* IMPROVEMENT 1: Mobile responsive design */
+        @media (max-width: 640px) {
+            .game-container, .ui-container {
+                width: 100%;
+                max-width: 640px;
+            }
+            
+            .resources {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .resource {
+                margin: 3px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1 class="game-header">Pixel Miner Pro</h1>
+    <div class="ui-container">
+        <div class="resources">
+            <div class="resource">
+                <div class="resource-icon stone-icon"></div>
+                <span id="stone-count">0</span>
+            </div>
+            <div class="resource">
+                <div class="resource-icon copper-icon"></div>
+                <span id="copper-count">0</span>
+            </div>
+            <div class="resource">
+                <div class="resource-icon silver-icon"></div>
+                <span id="silver-count">0</span>
+            </div>
+            <div class="resource">
+                <div class="resource-icon gold-icon"></div>
+                <span id="gold-count">0</span>
+            </div>
+        </div>
+        <div class="player-stats">
+            <div class="level-indicator">
+                Lvl <span id="player-level">1</span>
+                <div class="xp-bar">
+                    <div class="xp-fill" id="xp-fill"></div>
+                </div>
+            </div>
+            <button class="button" id="menu-toggle">Menu</button>
+        </div>
+    </div>
+    
+    <div class="game-container">
+        <svg id="game-svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="tooltip" id="tooltip"></div>
+        
+        <div class="ui-panel" id="menu-panel">
+            <h3 class="panel-title">Character Menu</h3>
+            <div class="tab-container">
+                <div class="tab active" data-tab="shop">Shop</div>
+                <div class="tab" data-tab="crafting">Craft</div>
+                <div class="tab" data-tab="inventory">Gems</div>
+                <div class="tab" data-tab="skills">Skills</div>
+                <div class="tab" data-tab="quests">Quests</div>
+            </div>
+            
+            <div class="tab-content active" id="shop-tab">
+                <div class="shop-item" id="upgrade-pickaxe">
+                    <div>Upgrade Pickaxe</div>
+                    <div><span id="pickaxe-cost">50</span> stone</div>
+                </div>
+                <div class="shop-item" id="upgrade-bag">
+                    <div>Bigger Bag</div>
+                    <div><span id="bag-cost">100</span> copper</div>
+                </div>
+                <!-- IMPROVEMENT 2: Added a new shop item -->
+                <div class="shop-item" id="upgrade-energy">
+                    <div>Energy Boost</div>
+                    <div><span id="energy-cost">50</span> silver</div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="crafting-tab">
+                <div class="crafting-item" id="craft-strength-gem">
+                    <div>Strength Gem</div>
+                    <div>15 copper</div>
+                </div>
+                <div class="crafting-item" id="craft-speed-gem">
+                    <div>Speed Gem</div>
+                    <div>20 silver</div>
+                </div>
+                <div class="crafting-item" id="craft-fortune-gem">
+                    <div>Fortune Gem</div>
+                    <div>10 gold</div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="inventory-tab">
+                <div id="gems-container">
+                    <p>No gems yet. Craft some!</p>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="skills-tab">
+                <div class="skill-points">
+                    <div class="skill-points-title">Skill Points:</div>
+                    <div class="skill-points-value" id="skill-points-display">0</div>
+                </div>
+                <div class="skill-tree" id="skill-tree">
+                    <!-- Skills will be added here dynamically -->
+                </div>
+                <h4>Perks</h4>
+                <div class="perk-list" id="perk-list">
+                    <!-- Perks will be added here dynamically -->
+                </div>
+            </div>
+            
+            <div class="tab-content" id="quests-tab">
+                <div id="quests-container">
+                    <p>Loading quests...</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="version">v0.0.2</div>
+    </div>
+    
+    <div class="controls">
+        WASD keys to move and mine blocks, Space to toggle menu. Complete quests to progress!
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Game constants
+            const BLOCK_SIZE = 32;
+            const GRID_WIDTH = 20;
+            const GRID_HEIGHT = 15;
+            const SURFACE_LEVEL = 3;
+            
+            // Game state
+            const game = {
+                player: { 
+                    x: 10, 
+                    y: 2, 
+                    direction: 'right',
+                    level: 1,
+                    xp: 0,
+                    xpToLevel: 100,
+                    skillPoints: 0,
+                    totalSkillPoints: 0,
+                    mining: false,
+                    miningSpeed: 300,
+                    miningPower: 1,
+                    bagSize: 100,
+                    luckModifier: 1,
+                    energy: 100,
+                    maxEnergy: 100,
+                    energyRegen: 5,
+                    energyCost: 10,
+                    criticalChance: 0.05,
+                    criticalMultiplier: 1.5,
+                    skills: {
+                        strength: {
+                            level: 0,
+                            maxLevel: 10,
+                            name: "Strength",
+                            description: "Increases mining power by 0.5 per level",
+                            effect: (level) => level * 0.5,
+                            icon: "💪"
+                        },
+                        speed: {
+                            level: 0,
+                            maxLevel: 10,
+                            name: "Speed",
+                            description: "Reduces mining time by 15ms per level",
+                            effect: (level) => level * 15,
+                            icon: "⚡"
+                        },
+                        fortune: {
+                            level: 0,
+                            maxLevel: 10,
+                            name: "Fortune",
+                            description: "Increases chance of finding bonus resources by 3% per level",
+                            effect: (level) => level * 0.03,
+                            icon: "🍀"
+                        },
+                        energy: {
+                            level: 0,
+                            maxLevel: 5,
+                            name: "Endurance",
+                            description: "Increases max energy by 20 per level",
+                            effect: (level) => level * 20,
+                            icon: "🔋"
+                        },
+                        critical: {
+                            level: 0,
+                            maxLevel: 5,
+                            name: "Precision",
+                            description: "Increases critical hit chance by 5% per level",
+                            effect: (level) => level * 0.05,
+                            icon: "🎯"
+                        },
+                        efficiency: {
+                            level: 0,
+                            maxLevel: 5,
+                            name: "Efficiency",
+                            description: "Reduces energy cost when mining by 5% per level",
+                            effect: (level) => level * 0.05,
+                            icon: "⚙️"
+                        }
+                    },
+                    perks: []
+                },
+                resources: { stone: 0, copper: 0, silver: 0, gold: 0 },
+                grid: [],
+                gems: [],
+                quests: [],
+                activeQuests: [],
+                completedQuests: [],
+                inventory: []
+            };
+            
+            // Resource counters
+            const resourceCounters = {
+                stone: document.getElementById('stone-count'),
+                copper: document.getElementById('copper-count'),
+                silver: document.getElementById('silver-count'),
+                gold: document.getElementById('gold-count')
+            };
+            
+            // Block types
+            const blockTypes = {
+		    air: { color: 'transparent' },
+		    stone: { 
+			fillColor: '#777', 
+			strokeColor: '#555',
+			value: 'stone', 
+			hardness: 1,
+			xp: 5
+		    },
+		    copper: { 
+			fillColor: '#CD7F32', 
+			strokeColor: '#A35719',
+			value: 'copper', 
+			hardness: 2,
+			xp: 10
+		    },
+		    silver: { 
+			fillColor: '#C0C0C0', 
+			strokeColor: '#A0A0A0',
+			value: 'silver', 
+			hardness: 3,
+			xp: 15
+		    },
+		    gold: { 
+			fillColor: '#FFD700', 
+			strokeColor: '#B8860B',
+			value: 'gold', 
+			hardness: 4,
+			xp: 25
+		    },
+		    treasure: {
+			fillColor: '#9b59b6',
+			strokeColor: '#8e44ad',
+			value: 'treasure',
+			hardness: 2,
+			xp: 50
+		    },
+		    food: {
+			fillColor: '#2ecc71', 
+			strokeColor: '#27ae60',
+			value: 'food',
+			hardness: 1, // Easy to mine
+			xp: 5,
+			energyRestore: 200 // Amount of energy restored when mined
+		    },
+		    // IMPROVEMENT 3: Added a new block type - diamond
+		    diamond: {
+			fillColor: '#3498db',
+			strokeColor: '#2980b9',
+			value: 'diamond',
+			hardness: 5,
+			xp: 100
+		    }
+		};
+            
+            // Gem types
+            const gemTypes = {
+                strength: {
+                    name: 'Strength Gem',
+                    color: '#e74c3c',
+                    effect: 'miningPower',
+                    bonus: 1
+                },
+                speed: {
+                    name: 'Speed Gem',
+                    color: '#3498db',
+                    effect: 'miningSpeed',
+                    bonus: -50
+                },
+                fortune: {
+                    name: 'Fortune Gem',
+                    color: '#f1c40f',
+                    effect: 'luckModifier',
+                    bonus: 0.2
+                }
+            };
+            
+            // Define perks that can be unlocked at specific levels
+            const perkSystem = {
+                perks: [
+                    {
+                        id: "treasure_hunter",
+                        name: "Treasure Hunter",
+                        description: "Increases chance of finding treasure blocks by 15%",
+                        unlockLevel: 5,
+                        icon: "🔍",
+                        unlocked: false
+                    },
+                    {
+                        id: "resource_magnet",
+                        name: "Resource Magnet",
+                        description: "10% chance to not consume a block when mining",
+                        unlockLevel: 10,
+                        icon: "🧲",
+                        unlocked: false
+                    },
+                    {
+                        id: "gem_master",
+                        name: "Gem Master",
+                        description: "Increases all gem effects by 25%",
+                        unlockLevel: 15,
+                        icon: "💎",
+                        unlocked: false
+                    },
+                    {
+                        id: "energetic",
+                        name: "Energetic",
+                        description: "Energy regenerates 50% faster",
+                        unlockLevel: 20,
+                        icon: "⚡",
+                        unlocked: false
+                    },
+                    {
+                        id: "deep_miner",
+                        name: "Deep Miner",
+                        description: "Find more valuable resources in deeper levels",
+                        unlockLevel: 25,
+                        icon: "⛏️",
+                        unlocked: false
+                    }
+                ],
+                
+                checkUnlocks: function(level) {
+                    let unlockedPerks = [];
+                    
+                    this.perks.forEach(perk => {
+                        if (level >= perk.unlockLevel && !perk.unlocked) {
+                            perk.unlocked = true;
+                            game.player.perks.push(perk.id);
+                            unlockedPerks.push(perk);
+                        }
+                    });
+                    
+                    return unlockedPerks;
+                },
+                
+                getPerk: function(id) {
+                    return this.perks.find(perk => perk.id === id);
+                },
+                
+                hasPerk: function(id) {
+                    return game.player.perks.includes(id);
+                },
+                
+                applyPerkEffects: function() {
+                    // Reset any perk-based effects first
+                    game.player.energyRegen = 5;
+                    
+                    // Then apply each active perk
+                    game.player.perks.forEach(perkId => {
+                        switch(perkId) {
+                            case "treasure_hunter":
+                                // Increase is applied when generating blocks
+                                break;
+                            case "resource_magnet":
+                                // Applied during mining logic
+                                break;
+                            case "gem_master":
+                                // Applied when calculating gem effects
+                                break;
+                            case "energetic":
+                                game.player.energyRegen = 7.5; // 50% boost from base 5
+                                break;
+                            case "deep_miner":
+                                // Applied in block generation logic
+                                break;
+                        }
+                    });
+                }
+            };
+            
+            // Quest types
+            const questTypes = {
+                // Mining quests
+                mineBlocks: {
+                    title: "Block Miner",
+                    description: "Mine specific blocks",
+                    generateDescription: (amount, blockType) => `Mine ${amount} ${blockType} blocks`,
+                    check: (quest, blockType) => {
+                        if (blockType === quest.targetType || quest.targetType === 'any') {
+                            quest.progress++;
+                            updateQuestProgress(quest);
+                        }
+                    },
+                    levels: [
+                        { level: 1, target: 10, targetType: 'stone', reward: { type: 'xp', amount: 50 } },
+                        { level: 2, target: 20, targetType: 'stone', reward: { type: 'xp', amount: 100 } },
+                        { level: 3, target: 15, targetType: 'copper', reward: { type: 'xp', amount: 150 } },
+                        { level: 4, target: 15, targetType: 'silver', reward: { type: 'resource', resource: 'copper', amount: 25 } },
+                        { level: 5, target: 10, targetType: 'gold', reward: { type: 'resource', resource: 'silver', amount: 15 } },
+                        { level: 6, target: 50, targetType: 'any', reward: { type: 'gem', gemType: 'strength' } }
+                    ]
+                },
+                
+                // Collection quests
+                collectResources: {
+                    title: "Resource Collector",
+                    description: "Collect specific resources",
+                    generateDescription: (amount, resourceType) => `Collect ${amount} ${resourceType}`,
+                    check: (quest, currentAmount, previousAmount) => {
+                        const diff = currentAmount - previousAmount;
+                        if (diff > 0) {
+                            quest.progress += diff;
+                            updateQuestProgress(quest);
+                        }
+                    },
+                    levels: [
+                        { level: 1, target: 100, targetType: 'stone', reward: { type: 'resource', resource: 'copper', amount: 10 } },
+                        { level: 2, target: 50, targetType: 'copper', reward: { type: 'xp', amount: 200 } },
+                        { level: 3, target: 30, targetType: 'silver', reward: { type: 'gem', gemType: 'speed' } },
+                        { level: 4, target: 20, targetType: 'gold', reward: { type: 'resource', resource: 'silver', amount: 50 } }
+                    ]
+                },
+                
+                // Level up quests
+                reachLevel: {
+                    title: "Level Master",
+                    description: "Reach a specific level",
+                    generateDescription: (level) => `Reach player level ${level}`,
+                    check: (quest, currentLevel) => {
+                        if (currentLevel >= quest.target) {
+                            quest.progress = quest.target;
+                            updateQuestProgress(quest);
+                        }
+                    },
+                    levels: [
+                        { level: 1, target: 5, reward: { type: 'resource', resource: 'copper', amount: 30 } },
+                        { level: 2, target: 10, reward: { type: 'resource', resource: 'silver', amount: 20 } },
+                        { level: 3, target: 15, reward: { type: 'gem', gemType: 'fortune' } },
+                        { level: 4, target: 20, reward: { type: 'item', itemType: 'treasure_map' } }
+                    ]
+                },
+                
+                // Crafting quests
+                craftItems: {
+                    title: "Master Crafter",
+                    description: "Craft specific items",
+                    generateDescription: (amount, itemType) => `Craft ${amount} ${gemTypes[itemType].name}`,
+                    check: (quest, itemType) => {
+                        if (itemType === quest.targetType) {
+                            quest.progress++;
+                            updateQuestProgress(quest);
+                        }
+                    },
+                    levels: [
+                        { level: 1, target: 1, targetType: 'strength', reward: { type: 'xp', amount: 100 } },
+                        { level: 2, target: 2, targetType: 'speed', reward: { type: 'resource', resource: 'gold', amount: 5 } },
+                        { level: 3, target: 3, targetType: 'fortune', reward: { type: 'resource', resource: 'gold', amount: 15 } }
+                    ]
+                },
+                
+                // Exploration quests
+                findTreasure: {
+                    title: "Treasure Hunter",
+                    description: "Find special treasure blocks",
+                    generateDescription: (amount) => `Find ${amount} treasure blocks`,
+                    check: (quest, blockType) => {
+                        if (blockType === 'treasure') {
+                            quest.progress++;
+                            updateQuestProgress(quest);
+                        }
+                    },
+                    levels: [
+                        { level: 1, target: 1, reward: { type: 'xp', amount: 150 } },
+                        { level: 2, target: 3, reward: { type: 'gem', gemType: 'fortune' } },
+                        { level: 3, target: 5, reward: { type: 'resource', resource: 'gold', amount: 25 } }
+                    ],
+                    locked: true,
+                    unlockCondition: () => game.inventory && game.inventory.includes('treasure_map')
+                }
+            };
+            
+            // DOM Elements
+            const svg = document.getElementById('game-svg');
+            const tooltip = document.getElementById('tooltip');
+            const menuPanel = document.getElementById('menu-panel');
+            
+            // Initialize game
+            function init() {
+                generateWorld();
+                createPlayer();
+                setupEventListeners();
+                startGameLoop();
+                initializeQuests();
+                initializeProgressionSystem();
+                updateUI();
+            }
+            
+            // Initialize progression system
+            function initializeProgressionSystem() {
+                // Add energy bar to UI
+                addEnergyBarToUI();
+                
+                // Implement energy system
+                implementEnergySystem();
+                
+                // Apply skill effects on game start
+                applySkillEffects();
+                
+                // Update skills UI
+                updateSkillsUI();
+                
+                // Update player stats
+                updatePlayerStats();
+            }
+            
+            // Add energy bar to UI
+            function addEnergyBarToUI() {
+                const resourcesDiv = document.querySelector('.resources');
+                
+                // Create energy container
+                const energyContainer = document.createElement('div');
+                energyContainer.className = 'resource';
+                
+                // Create energy icon
+                const energyIcon = document.createElement('div');
+                energyIcon.className = 'resource-icon energy-icon';
+                
+                // Create energy text
+                const energyText = document.createElement('span');
+                energyText.id = 'energy-count';
+                energyText.textContent = game.player.energy;
+                
+                // Add elements to container
+                energyContainer.appendChild(energyIcon);
+                energyContainer.appendChild(energyText);
+                
+                // Add to UI
+                resourcesDiv.appendChild(energyContainer);
+            }
+            
+            // Energy system
+            function implementEnergySystem() {
+                // Add energy regeneration
+                setInterval(() => {
+                    if (game.player.energy < game.player.maxEnergy) {
+                        game.player.energy = Math.min(game.player.energy + game.player.energyRegen, game.player.maxEnergy);
+                        updatePlayerStats();
+                    }
+                }, 1000);
+            }
+            
+            // Update player stats display
+            function updatePlayerStats() {
+                // Update energy display
+                const energyCount = document.getElementById('energy-count');
+                if (energyCount) {
+                    energyCount.textContent = Math.floor(game.player.energy);
+                }
+            }
+            
+            // Generate world
+            function generateWorld() {
+                svg.innerHTML = '';
+                game.grid = [];
+                
+                // Create sky gradient
+                const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+                const gradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+                gradient.setAttribute('id', 'skyGradient');
+                gradient.setAttribute('x1', '0%');
+                gradient.setAttribute('y1', '0%');
+                gradient.setAttribute('x2', '0%');
+                gradient.setAttribute('y2', '100%');
+                
+                const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+                stop1.setAttribute('offset', '0%');
+                stop1.setAttribute('stop-color', '#1e3c72');
+                
+                const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+                stop2.setAttribute('offset', '100%');
+                stop2.setAttribute('stop-color', '#2a5298');
+                
+                gradient.appendChild(stop1);
+                gradient.appendChild(stop2);
+                defs.appendChild(gradient);
+                svg.appendChild(defs);
+                
+                // Create empty grid
+                for (let y = 0; y < GRID_HEIGHT; y++) {
+                    game.grid[y] = [];
+                    for (let x = 0; x < GRID_WIDTH; x++) {
+                        game.grid[y][x] = { type: 'air' };
+                    }
+                }
+                
+                // Create sky
+                const sky = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                sky.setAttribute('x', 0);
+                sky.setAttribute('y', 0);
+                sky.setAttribute('width', GRID_WIDTH * BLOCK_SIZE);
+                sky.setAttribute('height', SURFACE_LEVEL * BLOCK_SIZE);
+                sky.setAttribute('fill', 'url(#skyGradient)');
+                svg.appendChild(sky);
+                
+                // Add clouds
+                for (let i = 0; i < 5; i++) {
+                    const cloudX = Math.random() * (GRID_WIDTH * BLOCK_SIZE - 100);
+                    const cloudY = Math.random() * (SURFACE_LEVEL * BLOCK_SIZE - 30);
+                    createCloud(cloudX, cloudY);
+                }
+                
+                // Create sun
+                const sun = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                sun.setAttribute('cx', GRID_WIDTH * BLOCK_SIZE - 50);
+                sun.setAttribute('cy', 50);
+                sun.setAttribute('r', 30);
+                sun.setAttribute('fill', '#f39c12');
+                sun.setAttribute('filter', 'drop-shadow(0 0 10px rgba(243, 156, 18, 0.7))');
+                svg.appendChild(sun);
+                
+                // Fill with blocks based on depth
+                for (let y = SURFACE_LEVEL; y < GRID_HEIGHT; y++) {
+                    for (let x = 0; x < GRID_WIDTH; x++) {
+                        let blockType;
+                        const depth = y - SURFACE_LEVEL;
+                        const random = Math.random();
+                        
+                        // Apply Deep Miner perk if player has it
+                        const deepMinerBonus = perkSystem.hasPerk('deep_miner') ? 0.1 : 0;
+                        if (random < 0.10) {
+                		blockType = 'food';
+            		} else if (depth < 3) {
+                            blockType = 'stone';
+                        } else if (depth < 6) {
+                            blockType = random < 0.8 - deepMinerBonus ? 'stone' : 'copper';
+                        } else if (depth < 9) {
+                            blockType = random < 0.6 - (deepMinerBonus * 2) ? 'stone' : (random < 0.9 ? 'copper' : 'silver');
+                        } else {
+                            blockType = random < 0.5 - (deepMinerBonus * 3) ? 'stone' : 
+                                       (random < 0.7 ? 'copper' : 
+                                       (random < 0.9 ? 'silver' : 'gold'));
+                        }
+                        
+                        // Apply Treasure Hunter perk for increased treasure chance
+                        let treasureChance = 0.02;
+                        if (perkSystem.hasPerk('treasure_hunter')) {
+                            treasureChance += 0.15;
+                        }
+                        
+                        // Rare chance for treasure
+                        if (random > (1 - treasureChance) && depth > 5) {
+                            blockType = 'treasure';
+                        }
+                        
+                        
+                        game.grid[y][x] = {
+                            type: blockType,
+                            health: blockTypes[blockType].hardness,
+                            maxHealth: blockTypes[blockType].hardness
+                        };
+                        
+                        // Create block element
+                        createBlock(x, y, blockType);
+                    }
+                }
+            }
+            
+            // Create block with visual enhancements
+            function createBlock(x, y, type) {
+                if (type === 'air') return;
+                
+                const block = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                block.setAttribute('data-x', x);
+                block.setAttribute('data-y', y);
+                
+                // Main block body
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('x', x * BLOCK_SIZE);
+                rect.setAttribute('y', y * BLOCK_SIZE);
+                rect.setAttribute('width', BLOCK_SIZE);
+                rect.setAttribute('height', BLOCK_SIZE);
+                rect.setAttribute('fill', blockTypes[type].fillColor);
+                rect.setAttribute('stroke', blockTypes[type].strokeColor);
+                rect.setAttribute('stroke-width', '1');
+                
+                block.appendChild(rect);
+                
+                // Add details to blocks
+                if (type !== 'air') {
+                    const details = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    const detailsPath = generateBlockDetails(x, y, type);
+                    details.setAttribute('d', detailsPath);
+                    details.setAttribute('fill', 'none');
+                    details.setAttribute('stroke', blockTypes[type].strokeColor);
+                    details.setAttribute('stroke-width', '1');
+                    details.setAttribute('opacity', '0.7');
+                    
+                    block.appendChild(details);
+                }
+                
+                svg.appendChild(block);
+                game.grid[y][x].element = block;
+            }
+            
+            // Generate block details based on type
+	function generateBlockDetails(x, y, type) {
+	    const startX = x * BLOCK_SIZE;
+	    const startY = y * BLOCK_SIZE;
+	    let path = '';
+	    
+	    switch (type) {
+		case 'stone':
+		    path = `M${startX + 5},${startY + 10} L${startX + 10},${startY + 15} 
+			    M${startX + 20},${startY + 5} L${startX + 25},${startY + 15}`;
+		    break;
+		case 'copper':
+		    path = `M${startX + 10},${startY + 5} Q${startX + 15},${startY + 15} ${startX + 25},${startY + 10} 
+			    M${startX + 5},${startY + 20} Q${startX + 15},${startY + 25} ${startX + 20},${startY + 20}`;
+		    break;
+		case 'silver':
+		    path = `M${startX + 8},${startY + 8} L${startX + 12},${startY + 12} M${startX + 12},${startY + 8} L${startX + 8},${startY + 12}
+			    M${startX + 20},${startY + 15} L${startX + 24},${startY + 19} M${startX + 24},${startY + 15} L${startX + 20},${startY + 19}`;
+		    break;
+		case 'gold':
+		    path = `M${startX + 10},${startY + 10} A5,5 0 1,0 ${startX + 20},${startY + 10}
+			    M${startX + 15},${startY + 20} A3,3 0 1,0 ${startX + 21},${startY + 20}`;
+		    break;
+		case 'treasure':
+		    path = `M${startX + 16},${startY + 10} v8 M${startX + 16},${startY + 22} v0.1
+			    M${startX + 10},${startY + 15} Q${startX + 16},${startY + 5} ${startX + 22},${startY + 15}`;
+		    break;
+		case 'food':
+		    // Apple-like shape
+		    path = `M${startX + 16},${startY + 8} v-5 m-4,0 h8 
+			    M${startX + 16},${startY + 16} a6,8 0 1,0 0.1,0`;
+		    break;
+	    }
+	    
+	    return path;
+	}
+            
+            // Create cloud
+            function createCloud(x, y) {
+                const cloud = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                cloud.setAttribute('d', `M${x},${y} a15,10 0 1,0 30,0 a10,10 0 1,0 -30,0 z`);
+                cloud.setAttribute('fill', 'rgba(255, 255, 255, 0.7)');
+                svg.appendChild(cloud);
+                
+                // Animate cloud
+                const moveCloud = () => {
+                    x += 0.2;
+                    if (x > GRID_WIDTH * BLOCK_SIZE) {
+                        x = -50;
+                    }
+                    cloud.setAttribute('d', `M${x},${y} a15,10 0 1,0 30,0 a10,10 0 1,0 -30,0 z`);
+                    requestAnimationFrame(moveCloud);
+                };
+                requestAnimationFrame(moveCloud);
+            }
+            
+            // Create player
+            function createPlayer() {
+                const player = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                player.setAttribute('id', 'player');
+                
+                // Player body
+                const body = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                body.setAttribute('x', 8);
+                body.setAttribute('y', 6);
+                body.setAttribute('width', 16);
+                body.setAttribute('height', 20);
+                body.setAttribute('fill', '#3498db');
+                body.setAttribute('stroke', '#2980b9');
+                body.setAttribute('stroke-width', '1');
+                body.setAttribute('rx', 4);
+                player.appendChild(body);
+                
+                // Player head
+                const head = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                head.setAttribute('cx', 16);
+                head.setAttribute('cy', 6);
+                head.setAttribute('r', 6);
+                head.setAttribute('fill', '#f5deb3');
+                head.setAttribute('stroke', '#d0b38b');
+                head.setAttribute('stroke-width', '1');
+                player.appendChild(head);
+                
+                // Hat
+                const hat = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                hat.setAttribute('d', 'M10,3 h12 v-2 a6,3 0 1,1 -12,0 z');
+                hat.setAttribute('fill', '#3498db');
+                hat.setAttribute('stroke', '#2980b9');
+                hat.setAttribute('stroke-width', '1');
+                player.appendChild(hat);
+                
+                // Headlamp on hat
+                const lamp = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                lamp.setAttribute('cx', 16);
+                lamp.setAttribute('cy', 0.8);
+                lamp.setAttribute('r', 1.5);
+                lamp.setAttribute('fill', '#ffff00');
+                lamp.setAttribute('stroke', '#e67e22');
+                lamp.setAttribute('stroke-width', '0.5');
+                player.appendChild(lamp);
+                
+                // Eyes
+                const leftEye = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                leftEye.setAttribute('cx', 14);
+                leftEye.setAttribute('cy', 5);
+                leftEye.setAttribute('r', 1);
+                leftEye.setAttribute('fill', '#333');
+                player.appendChild(leftEye);
+                
+                const rightEye = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                rightEye.setAttribute('cx', 18);
+                rightEye.setAttribute('cy', 5);
+                rightEye.setAttribute('r', 1);
+                rightEye.setAttribute('fill', '#333');
+                player.appendChild(rightEye);
+                
+                // Smile
+                const mouth = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                mouth.setAttribute('d', 'M14,8 q2,2 4,0');
+                mouth.setAttribute('fill', 'none');
+                mouth.setAttribute('stroke', '#333');
+                mouth.setAttribute('stroke-width', '0.7');
+                player.appendChild(mouth);
+                
+                // L-shaped pickaxe (matching the image)
+                const pickaxe = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                pickaxe.setAttribute('id', 'pickaxe');
+                
+                // Handle
+                const handle = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                handle.setAttribute('x1', 24);
+                handle.setAttribute('y1', 16);
+                handle.setAttribute('x2', 31);
+                handle.setAttribute('y2', 16);
+                handle.setAttribute('stroke', '#8B4513');
+                handle.setAttribute('stroke-width', '2');
+                pickaxe.appendChild(handle);
+                
+                // Metal L-shaped head
+                const pickHead = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                pickHead.setAttribute('d', 'M31,16 L31,12 L35,12');
+                pickHead.setAttribute('fill', 'none');
+                pickHead.setAttribute('stroke', '#A9A9A9');
+                pickHead.setAttribute('stroke-width', '2');
+                pickHead.setAttribute('stroke-linejoin', 'round');
+                pickaxe.appendChild(pickHead);
+                
+                player.appendChild(pickaxe);
+                
+                // Face direction indicator (for game mechanics)
+                const eye = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                eye.setAttribute('id', 'player-eye');
+                eye.setAttribute('r', 1.5);
+                eye.setAttribute('fill', 'rgba(0,0,0,0)'); // Make invisible but keep for game mechanics
+                player.appendChild(eye);
+                
+                svg.appendChild(player);
+                game.player.element = player;
+                
+                updatePlayerPosition();
+            }
+            // Update player position
+            function updatePlayerPosition() {
+                const x = game.player.x * BLOCK_SIZE;
+                const y = game.player.y * BLOCK_SIZE;
+                game.player.element.setAttribute('transform', `translate(${x}, ${y})`);
+                
+                // Update face direction
+                const eye = document.getElementById('player-eye');
+                const pickaxe = document.getElementById('pickaxe');
+                
+                if (game.player.direction === 'right') {
+                    eye.setAttribute('cx', 18);
+                    eye.setAttribute('cy', 6);
+                    pickaxe.removeAttribute('transform');
+                } else {
+                    eye.setAttribute('cx', 14);
+                    eye.setAttribute('cy', 6);
+                    pickaxe.setAttribute('transform', 'scale(-1,1) translate(-32,0)');
+                }
+            }
+            
+            // Move player
+            function movePlayer(dx, dy) {
+                const newX = game.player.x + dx;
+                const newY = game.player.y + dy;
+                
+                // Check boundaries
+                if (newX < 0 || newX >= GRID_WIDTH || newY < 0 || newY >= GRID_HEIGHT) {
+                    return;
+                }
+                
+                // Update direction if moving horizontally
+                if (dx !== 0) {
+                    game.player.direction = dx > 0 ? 'right' : 'left';
+                }
+                
+                // Check if destination has a block
+                if (game.grid[newY][newX].type !== 'air') {
+                    // Try to mine the block instead of moving
+                    mineBlock(newX, newY);
+                    return;
+                }
+                
+                // Move to the empty space
+                game.player.x = newX;
+                game.player.y = newY;
+                updatePlayerPosition();
+            }
+            
+            // Apply gravity (disabled for free movement)
+            function applyGravity() {
+                return;
+            }
+            
+            // Mine block
+            function mineBlock(x, y) {
+                // Check boundaries
+                if (y < 0 || y >= GRID_HEIGHT || x < 0 || x >= GRID_WIDTH) return;
+                
+                const block = game.grid[y][x];
+                if (block.type === 'air') return;
+                
+                // Check if tool is strong enough
+                if (game.player.level < blockTypes[block.type].hardness) {
+                    showTooltip(`Need level ${blockTypes[block.type].hardness} to mine this!`, x, y);
+                    return;
+                }
+                
+                // Check if player has enough energy
+                const efficiencyDiscount = game.player.skills.efficiency.level * 0.05;
+                const energyCost = Math.max(1, Math.floor(game.player.energyCost * (1 - efficiencyDiscount)));
+                
+                if (game.player.energy < energyCost) {
+                    showTooltip(`Not enough energy!`, x, y);
+                    return;
+                }
+                
+                // Determine what resource we'll get from this block
+                let resourceToGet = block.type;
+                let amount = 1;
+                
+                // For treasures, we need to determine what random resource would be obtained
+                if (resourceToGet === 'treasure') {
+                    const resources = ['stone', 'copper', 'silver', 'gold'];
+                    resourceToGet = resources[Math.floor(Math.random() * resources.length)];
+                    amount = 5; // Treasures give 5x resources
+                }
+                
+                // Check if specific resource limit would be exceeded
+                if (game.resources[resourceToGet] + amount > game.player.bagSize) {
+                    showTooltip(`Not enough space for more ${resourceToGet}!`, game.player.x, game.player.y);
+                    return;
+                }
+                
+                // Consume energy
+                game.player.energy -= energyCost;
+                updatePlayerStats();
+                
+                // Start mining animation
+                game.player.mining = true;
+                
+                // Visual feedback - add a mining progress bar
+                const blockX = x * BLOCK_SIZE;
+                const blockY = y * BLOCK_SIZE;
+                
+                // Create progress bar
+                const progressBar = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                progressBar.setAttribute('id', 'mining-progress');
+                
+                const barBg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                barBg.setAttribute('x', blockX);
+                barBg.setAttribute('y', blockY - 5);
+                barBg.setAttribute('width', BLOCK_SIZE);
+                barBg.setAttribute('height', 3);
+                barBg.setAttribute('fill', '#333');
+                progressBar.appendChild(barBg);
+                
+                const barFill = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                barFill.setAttribute('x', blockX);
+                barFill.setAttribute('y', blockY - 5);
+                barFill.setAttribute('width', 0);
+                barFill.setAttribute('height', 3);
+                barFill.setAttribute('fill', '#3498db');
+                barFill.setAttribute('id', 'mining-fill');
+                progressBar.appendChild(barFill);
+                
+                svg.appendChild(progressBar);
+                
+                // Mining animation
+                let progress = 0;
+                const interval = 100; // Update every 100ms
+                const totalTime = game.player.miningSpeed;
+                const steps = totalTime / interval;
+                const increment = 100 / steps;
+                
+                // Pickaxe animation
+                animatePickaxe();
+                
+                const miningInterval = setInterval(() => {
+                    progress += increment;
+                    
+                    // Update progress bar
+                    const fillWidth = (progress / 100) * BLOCK_SIZE;
+                    barFill.setAttribute('width', fillWidth);
+                    
+                    if (progress >= 100) {
+                        clearInterval(miningInterval);
+                        
+                        // Remove progress bar
+                        svg.removeChild(progressBar);
+                        
+                        // Check for critical hit
+                        let isCritical = Math.random() < game.player.criticalChance;
+                        let miningPower = game.player.miningPower;
+                        
+                        if (isCritical) {
+                            miningPower *= game.player.criticalMultiplier;
+                            showCriticalHitEffect(x, y);
+                        }
+                        
+                        // Calculate damage based on player's mining power
+                        block.health -= miningPower;
+                        
+                        // Check if block is destroyed
+                        if (block.health <= 0) {
+                            // Add resource to inventory with luck modifier
+                            let amount = 1;
+                            
+                            // Apply luck modifier for additional resources
+                            if (Math.random() < game.player.luckModifier - 1) {
+                                amount = 2;
+                                showTooltip("Lucky! +1 extra", x, y);
+                            }
+                            
+                            // Check for resource magnet perk (chance to not consume block)
+                            let blockPreserved = false;
+                            if (perkSystem.hasPerk('resource_magnet') && Math.random() < 0.1) {
+                                blockPreserved = true;
+                                showTooltip("Block preserved!", x, y);
+                            }
+                            
+                            if (block.type === 'food') {
+				    // Restore energy
+				    const energyRestored = blockTypes.food.energyRestore;
+				    game.player.energy = Math.min(game.player.energy + energyRestored, game.player.maxEnergy);
+				    showTooltip(`+${energyRestored} Energy!`, x, y);
+				    
+				    // Show visual effect for energy gain
+				    showEnergyGainEffect(x, y, energyRestored);
+			    }
+                            // Add resources based on block type
+                            if (block.type === 'treasure') {
+                                // Treasure gives a random resource
+                                const resources = ['stone', 'copper', 'silver', 'gold'];
+                                const randomResource = resources[Math.floor(Math.random() * resources.length)];
+                                game.resources[randomResource] += amount * 5;
+                                showTooltip(`Found ${amount * 5} ${randomResource}!`, x, y);
+                                
+                                // Track quest progress for treasure
+                                game.activeQuests.forEach(quest => {
+                                    if (quest.type === 'findTreasure') {
+                                        questTypes.findTreasure.check(quest, block.type);
+                                    }
+                                });
+                            } else {
+                                game.resources[block.type] += amount;
+                            }
+                            
+                            // Add XP
+                            addExperience(blockTypes[block.type].xp);
+                            
+                            // Track quest progress - mining
+                            game.activeQuests.forEach(quest => {
+                                if (quest.type === 'mineBlocks') {
+                                    questTypes.mineBlocks.check(quest, block.type);
+                                }
+                            });
+                            
+                            if (!blockPreserved) {
+                                // Convert block to air
+                                game.grid[y][x].type = 'air';
+                                
+                                // Remove block element
+                                if (block.element) {
+                                    svg.removeChild(block.element);
+                                }
+                                
+                                // Check for cleared rows and generate new ones
+                                checkForClearedRows();
+                            } else {
+                                // Reset health for preserved block
+                                block.health = block.maxHealth;
+                            }
+                        } else {
+                            // Show block damage visually
+                            const damagePercent = 1 - (block.health / block.maxHealth);
+                            const crackPath = generateCrackPath(x, y, damagePercent);
+                            
+                            // Check if crack element already exists
+                            let crackElement = block.element.querySelector('.crack');
+                            
+                            if (!crackElement) {
+                                // Create new crack element
+                                crackElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                                crackElement.setAttribute('class', 'crack');
+                                crackElement.setAttribute('fill', 'none');
+                                crackElement.setAttribute('stroke', '#000');
+                                crackElement.setAttribute('stroke-width', '1');
+                                crackElement.setAttribute('opacity', '0.5');
+                                block.element.appendChild(crackElement);
+                            }
+                            
+                            crackElement.setAttribute('d', crackPath);
+                        }
+                        
+                        // Update UI
+                        updateUI();
+                        
+                        // End mining state
+                        game.player.mining = false;
+                    }
+                }, interval);
+            }
+            
+            function showEnergyGainEffect(x, y, amount) {
+		    const blockX = x * BLOCK_SIZE + BLOCK_SIZE / 2;
+		    const blockY = y * BLOCK_SIZE + BLOCK_SIZE / 2;
+		    
+		    // Create energy gain text
+		    const energyText = document.createElement('div');
+		    energyText.className = 'attribute-change';
+		    energyText.style.left = `${blockX}px`;
+		    energyText.style.top = `${blockY}px`;
+		    energyText.textContent = `+${amount} Energy`;
+		    energyText.style.color = '#2ecc71'; // Green color
+		    
+		    document.querySelector('.game-container').appendChild(energyText);
+		    
+		    // Remove after animation completes
+		    setTimeout(() => {
+			energyText.remove();
+		    }, 1500);
+	}
+            // Show critical hit effect
+            function showCriticalHitEffect(x, y) {
+                const blockX = x * BLOCK_SIZE + BLOCK_SIZE / 2;
+                const blockY = y * BLOCK_SIZE + BLOCK_SIZE / 2;
+                
+                // Create critical hit text
+                const critText = document.createElement('div');
+                critText.className = 'attribute-change';
+                critText.style.left = `${blockX}px`;
+                critText.style.top = `${blockY}px`;
+                critText.textContent = 'CRITICAL!';
+                critText.style.color = '#e74c3c';
+                critText.style.fontSize = '16px';
+                critText.style.fontWeight = 'bold';
+                
+                document.querySelector('.game-container').appendChild(critText);
+                
+                // Remove after animation completes
+                setTimeout(() => {
+                    critText.remove();
+                }, 1500);
+            }
+            
+            // Check for cleared rows and generate new ones
+            function checkForClearedRows() {
+                // Check if the top row (at SURFACE_LEVEL) is completely cleared
+                let topRowCleared = true;
+                for (let x = 0; x < GRID_WIDTH; x++) {
+                    if (game.grid[SURFACE_LEVEL][x].type !== 'air') {
+                        topRowCleared = false;
+                        break;
+                    }
+                }
+                
+                // If top row is cleared, shift everything up and generate new bottom row
+                if (topRowCleared) {
+                    // Shift all rows up by one
+                    for (let y = SURFACE_LEVEL; y < GRID_HEIGHT - 1; y++) {
+                        for (let x = 0; x < GRID_WIDTH; x++) {
+                            // Update grid data
+                            game.grid[y][x] = game.grid[y + 1][x];
+                            
+                            // Move the visual elements
+                            if (game.grid[y][x].element) {
+                                const element = game.grid[y][x].element;
+                                const currentY = parseInt(element.getAttribute('data-y'));
+                                element.setAttribute('data-y', currentY - 1);
+                                
+                                // Update the position of the rectangle
+                                const rect = element.querySelector('rect');
+                                if (rect) {
+                                    rect.setAttribute('y', (currentY - 1) * BLOCK_SIZE);
+                                }
+                                
+                                // Update any other path elements for details
+                                const details = element.querySelector('path:not(.crack)');
+                                if (details) {
+                                    const detailsPath = generateBlockDetails(x, currentY - 1, game.grid[y][x].type);
+                                    details.setAttribute('d', detailsPath);
+                                }
+                                
+                                // Update crack pattern if it exists
+                                const crack = element.querySelector('.crack');
+                                if (crack) {
+                                    const damagePercent = 1 - (game.grid[y][x].health / game.grid[y][x].maxHealth);
+                                    const crackPath = generateCrackPath(x, currentY - 1, damagePercent);
+                                    crack.setAttribute('d', crackPath);
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Generate new bottom row
+                    const bottomY = GRID_HEIGHT - 1;
+                    for (let x = 0; x < GRID_WIDTH; x++) {
+                        let blockType;
+                        const random = Math.random();
+                        
+                        // Apply Deep Miner perk if player has it
+                        const deepMinerBonus = perkSystem.hasPerk('deep_miner') ? 0.1 : 0;
+                        
+                        // Random chance for food blocks first
+                        if (random < 0.10) {
+                            blockType = 'food';
+                        }
+                        // Determine block type based on depth and randomness
+                        // Higher chance for valuable ores with Deep Miner perk
+                        else if (random < 0.55 - deepMinerBonus) {
+                            blockType = 'stone';
+                        } else if (random < 0.75 - deepMinerBonus) {
+                            blockType = 'copper';
+                        } else if (random < 0.9 - deepMinerBonus) {
+                            blockType = 'silver';
+                        } else {
+                            blockType = 'gold';
+                        }
+                        
+                        // Apply Treasure Hunter perk for increased treasure chance
+                        let treasureChance = 0.05;
+                        if (perkSystem.hasPerk('treasure_hunter')) {
+                            treasureChance += 0.15;
+                        }
+                        
+                        // Rare chance for treasure (only if it's not already a food block)
+                        if (random > 1 - treasureChance && blockType !== 'food') {
+                            blockType = 'treasure';
+                        }
+                        
+                        game.grid[bottomY][x] = {
+                            type: blockType,
+                            health: blockTypes[blockType].hardness,
+                            maxHealth: blockTypes[blockType].hardness
+                        };
+                        
+                        // Create block element
+                        createBlock(x, bottomY, blockType);
+                    }
+                    
+                    // Move the player up one row if they were at the top row
+                    if (game.player.y === SURFACE_LEVEL) {
+                        game.player.y++;
+                        updatePlayerPosition();
+                    }
+                    
+                    // Show a notification
+                    showTooltip("New row generated!", GRID_WIDTH / 2, GRID_HEIGHT - 1);
+                }
+            }
+            
+            // Generate crack pattern based on damage
+            function generateCrackPath(x, y, damagePercent) {
+                const startX = x * BLOCK_SIZE;
+                const startY = y * BLOCK_SIZE;
+                const centerX = startX + BLOCK_SIZE / 2;
+                const centerY = startY + BLOCK_SIZE / 2;
+                
+                let path = '';
+                const crackLength = damagePercent * (BLOCK_SIZE / 2);
+                
+                // Create cracks from center
+                for (let i = 0; i < 3; i++) {
+                    const angle = (i / 3) * Math.PI * 2;
+                    const endX = centerX + Math.cos(angle) * crackLength;
+                    const endY = centerY + Math.sin(angle) * crackLength;
+                    
+                    path += `M${centerX},${centerY} L${endX},${endY} `;
+                }
+                
+                return path;
+            }
+            
+            // Animate pickaxe when mining
+            function animatePickaxe() {
+                const pickaxe = document.getElementById('pickaxe');
+                
+                // Store original position
+                const originalTransform = pickaxe.getAttribute('transform') || '';
+                
+                // Mining animation
+                const swingRight = () => {
+                    pickaxe.setAttribute('transform', originalTransform + ' rotate(20, 24, 16)');
+                    setTimeout(swingLeft, 150);
+                };
+                
+                const swingLeft = () => {
+                    pickaxe.setAttribute('transform', originalTransform + ' rotate(-10, 24, 16)');
+                    setTimeout(() => {
+                        pickaxe.setAttribute('transform', originalTransform);
+                    }, 150);
+                };
+                
+                swingRight();
+            }
+            
+            // Show tooltip
+            function showTooltip(text, x, y) {
+                const tooltip = document.getElementById('tooltip');
+                tooltip.textContent = text;
+                tooltip.style.display = 'block';
+                
+                // Position tooltip above the block
+                const posX = x * BLOCK_SIZE + BLOCK_SIZE / 2;
+                const posY = y * BLOCK_SIZE - 20;
+                
+                tooltip.style.left = `${posX}px`;
+                tooltip.style.top = `${posY}px`;
+                
+                // Add animation
+                tooltip.style.opacity = '0';
+                tooltip.style.transform = 'translateY(10px)';
+                
+                setTimeout(() => {
+                    tooltip.style.transition = 'opacity 0.3s, transform 0.3s';
+                    tooltip.style.opacity = '1';
+                    tooltip.style.transform = 'translateY(0)';
+                }, 10);
+                
+                // Hide tooltip after delay
+                setTimeout(() => {
+                    tooltip.style.opacity = '0';
+                    tooltip.style.transform = 'translateY(-10px)';
+                    
+                    setTimeout(() => {
+                        tooltip.style.display = 'none';
+                    }, 300);
+                }, 2000);
+            }
+            
+            // Add experience
+            function addExperience(amount) {
+                game.player.xp += amount;
+                
+                // Check for level up
+                if (game.player.xp >= game.player.xpToLevel) {
+                    const oldLevel = game.player.level;
+                    game.player.level++;
+                    game.player.xp -= game.player.xpToLevel;
+                    game.player.xpToLevel = Math.floor(game.player.xpToLevel * 1.5);
+                    
+                    // Award skill points (1 every level, bonus point every 5 levels)
+                    const pointsGained = (game.player.level % 5 === 0) ? 2 : 1;
+                    game.player.skillPoints += pointsGained;
+                    game.player.totalSkillPoints += pointsGained;
+                    
+                    // Check for perk unlocks
+                    const unlockedPerks = perkSystem.checkUnlocks(game.player.level);
+                    
+                    // Apply perk effects
+                    perkSystem.applyPerkEffects();
+                    
+                    // Show level up notification
+                    showLevelUpNotification(oldLevel, game.player.level, pointsGained, unlockedPerks);
+                    
+                    // Check level quests
+                    game.activeQuests.forEach(quest => {
+                        if (quest.type === 'reachLevel') {
+                            questTypes.reachLevel.check(quest, game.player.level);
+                        }
+                    });
+                }
+                
+                updateUI();
+            }
+            
+            // Show level up notification
+            function showLevelUpNotification(oldLevel, newLevel, pointsGained, unlockedPerks) {
+                // Create notification element
+                const notification = document.createElement('div');
+                notification.className = 'level-up-notification';
+                
+                // Create content
+                let rewardsHTML = `
+                    <div class="level-up-reward">
+                        <span class="level-up-reward-icon">⭐</span>
+                        <span>${pointsGained} Skill Point${pointsGained > 1 ? 's' : ''}</span>
+                    </div>
+                `;
+                
+                // Add unlocked perks
+                unlockedPerks.forEach(perk => {
+                    rewardsHTML += `
+                        <div class="level-up-reward">
+                            <span class="level-up-reward-icon">${perk.icon}</span>
+                            <span>New Perk: ${perk.name}</span>
+                        </div>
+                    `;
+                });
+                
+                notification.innerHTML = `
+                    <div class="level-up-title">Level Up!</div>
+                    <div>Level ${oldLevel} → ${newLevel}</div>
+                    <div class="level-up-rewards">
+                        ${rewardsHTML}
+                    </div>
+                    <button class="close-level-up">Continue</button>
+                `;
+                
+                // Add to game container
+                document.querySelector('.game-container').appendChild(notification);
+                
+                // Add event listener to close button
+                notification.querySelector('.close-level-up').addEventListener('click', () => {
+                    notification.remove();
+                });
+                
+                // Show floating text on player
+                showTooltip(`Level Up! Now level ${newLevel}`, game.player.x, game.player.y);
+            }
+            
+            // Update skills UI
+            function updateSkillsUI() {
+                const skillTree = document.getElementById('skill-tree');
+                if (!skillTree) return;
+                
+                // Update skill points display
+                const skillPointsDisplay = document.getElementById('skill-points-display');
+                if (skillPointsDisplay) {
+                    skillPointsDisplay.textContent = game.player.skillPoints;
+                }
+                
+                // Clear current skills
+                skillTree.innerHTML = '';
+                
+                // Add each skill
+                for (const [skillId, skill] of Object.entries(game.player.skills)) {
+                    const skillItem = document.createElement('div');
+                    skillItem.className = 'skill-item';
+                    
+                    const progressPercent = (skill.level / skill.maxLevel) * 100;
+                    
+                    skillItem.innerHTML = `
+                        <div class="skill-name">
+                            <span class="skill-icon">${skill.icon}</span>
+                            ${skill.name}
+                        </div>
+                        <div class="skill-description">${skill.description}</div>
+                        <div class="skill-level">
+                            <span class="skill-level-text">Lv.${skill.level}/${skill.maxLevel}</span>
+                            <div class="skill-progress">
+                                <div class="skill-progress-fill" style="width: ${progressPercent}%"></div>
+                            </div>
+                            <button class="skill-upgrade-btn" data-skill="${skillId}" ${game.player.skillPoints <= 0 || skill.level >= skill.maxLevel ? 'disabled' : ''}>
+                                Upgrade
+                            </button>
+                        </div>
+                    `;
+                    
+                    skillTree.appendChild(skillItem);
+                }
+                
+                // Add event listeners to upgrade buttons
+                const upgradeButtons = document.querySelectorAll('.skill-upgrade-btn');
+                upgradeButtons.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const skillId = e.target.dataset.skill;
+                        upgradeSkill(skillId);
+                    });
+                });
+                
+                // Update perks list
+                updatePerksUI();
+            }
+            
+            // Update perks UI
+            function updatePerksUI() {
+                const perkList = document.getElementById('perk-list');
+                if (!perkList) return;
+                
+                // Clear current perks
+                perkList.innerHTML = '';
+                
+                // Add each perk
+                perkSystem.perks.forEach(perk => {
+                    const perkItem = document.createElement('div');
+                    perkItem.className = `perk-item ${perk.unlocked ? '' : 'locked'}`;
+                    
+                    perkItem.innerHTML = `
+                        <div class="perk-icon">${perk.icon}</div>
+                        <div class="perk-info">
+                            <div class="perk-name">${perk.name}</div>
+                            <div class="perk-description">${perk.description}</div>
+                            <div class="perk-level">${perk.unlocked ? 'Unlocked' : `Unlocks at level ${perk.unlockLevel}`}</div>
+                        </div>
+                    `;
+                    
+                    perkList.appendChild(perkItem);
+                });
+            }
+            
+            // Upgrade skill
+            function upgradeSkill(skillId) {
+                const skill = game.player.skills[skillId];
+                
+                // Check if we can upgrade
+                if (game.player.skillPoints <= 0 || skill.level >= skill.maxLevel) {
+                    return;
+                }
+                
+                // Spend skill point and upgrade skill
+                game.player.skillPoints--;
+                skill.level++;
+                
+                // Apply skill effects
+                applySkillEffects();
+                
+                // Update UI
+                updateSkillsUI();
+                updatePlayerStats();
+                
+                // Show visual feedback
+                showSkillUpgradeEffect(skillId);
+            }
+            
+            // Apply all skill effects to player stats
+            function applySkillEffects() {
+                // Reset to base stats first
+                game.player.miningPower = 1;
+                game.player.miningSpeed = 300;
+                game.player.luckModifier = 1;
+                game.player.maxEnergy = 1000;
+                game.player.criticalChance = 0.05;
+                game.player.criticalMultiplier = 1.5;
+                
+                // Apply skill effects
+                game.player.miningPower += game.player.skills.strength.effect(game.player.skills.strength.level);
+                game.player.miningSpeed -= game.player.skills.speed.effect(game.player.skills.speed.level);
+                game.player.luckModifier += game.player.skills.fortune.effect(game.player.skills.fortune.level);
+                game.player.maxEnergy += game.player.skills.energy.effect(game.player.skills.energy.level);
+                game.player.criticalChance += game.player.skills.critical.effect(game.player.skills.critical.level);
+                
+                // Apply gem effects
+                game.gems.forEach(gem => {
+                    if (gem.equipped) {
+                        const gemType = gemTypes[gem.type];
+                        const effect = gemType.effect;
+                        
+                        // Apply Gem Master perk bonus if player has it
+                        const bonus = perkSystem.hasPerk('gem_master') ? gemType.bonus * 1.25 : gemType.bonus;
+                        
+                        if (effect === 'miningSpeed') {
+                            // Lower is faster for mining speed
+                            game.player.miningSpeed = Math.max(50, game.player.miningSpeed + bonus);
+                        } else {
+                            // Higher is better for other stats
+                            game.player[effect] += bonus;
+                        }
+                    }
+                });
+                
+                // Apply perk effects
+                perkSystem.applyPerkEffects();
+            }
+            
+            // Show visual effect when upgrading a skill
+            function showSkillUpgradeEffect(skillId) {
+                const skill = game.player.skills[skillId];
+                
+                // Show floating text on player
+                const playerX = game.player.x * BLOCK_SIZE + BLOCK_SIZE / 2;
+                const playerY = game.player.y * BLOCK_SIZE - 20;
+                
+                const floatingText = document.createElement('div');
+                floatingText.className = 'attribute-change';
+                floatingText.style.left = `${playerX}px`;
+                floatingText.style.top = `${playerY}px`;
+                
+                // Determine text based on skill
+                let text = '';
+                let color = '';
+                
+                switch(skillId) {
+                    case 'strength':
+                        text = `+0.5 Mining Power`;
+                        color = '#e74c3c';
+                        break;
+                    case 'speed':
+                        text = `+15ms Mining Speed`;
+                        color = '#3498db';
+                        break;
+                    case 'fortune':
+                        text = `+3% Luck`;
+                        color = '#f1c40f';
+                        break;
+                    case 'energy':
+                        text = `+20 Max Energy`;
+                        color = '#2ecc71';
+                        break;
+                    case 'critical':
+                        text = `+5% Crit Chance`;
+                        color = '#9b59b6';
+                        break;
+                    case 'efficiency':
+                        text = `+5% Energy Efficiency`;
+                        color = '#1abc9c';
+                        break;
+                }
+                
+                floatingText.textContent = text;
+                floatingText.style.color = color;
+                
+                document.querySelector('.game-container').appendChild(floatingText);
+                
+                // Remove after animation completes
+                setTimeout(() => {
+                    floatingText.remove();
+                }, 1500);
+            }
+            
+            // Initialize quest system
+            function initializeQuests() {
+                // Create quest objects
+                for (const [questId, questType] of Object.entries(questTypes)) {
+                    const questLevels = questType.levels;
+                    
+                    for (const levelData of questLevels) {
+                        const quest = {
+                            id: `${questId}_${levelData.level}`,
+                            type: questId,
+                            level: levelData.level,
+                            title: `${questType.title} ${levelData.level}`,
+                            description: questType.generateDescription(levelData.target, levelData.targetType),
+                            target: levelData.target,
+                            targetType: levelData.targetType || null,
+                            progress: 0,
+                            completed: false,
+                            claimed: false,
+                            reward: levelData.reward,
+                            locked: questType.locked || false,
+                            unlockCondition: questType.unlockCondition
+                        };
+                        
+                        game.quests.push(quest);
+                        
+                        // Add to active quests if it's a level 1 quest and not locked
+                        if (levelData.level === 1 && !quest.locked) {
+                            game.activeQuests.push(quest);
+                        }
+                    }
+                }
+                
+                // Update quests UI
+                updateQuestsUI();
+            }
+            
+            // Update quest progress
+            function updateQuestProgress(quest) {
+                // Cap progress at target
+                quest.progress = Math.min(quest.progress, quest.target);
+                
+                // Check if completed
+                if (quest.progress >= quest.target && !quest.completed) {
+                    quest.completed = true;
+                    showQuestNotification(`Quest completed: ${quest.title}!`);
+                    
+                    // Update UI
+                    updateQuestsUI();
+                }
+            }
+            
+            // Show quest notification
+            function showQuestNotification(message) {
+                // Create notification if it doesn't exist
+                let notification = document.getElementById('quest-notification');
+                if (!notification) {
+                    notification = document.createElement('div');
+                    notification.id = 'quest-notification';
+                    notification.className = 'quest-notification';
+                    document.querySelector('.game-container').appendChild(notification);
+                }
+                
+                // Set message and show
+                notification.textContent = message;
+                notification.style.display = 'block';
+                
+                // Hide after 3 seconds
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 3000);
+            }
+            
+            // Claim quest reward
+            function claimQuestReward(questId) {
+                const quest = game.quests.find(q => q.id === questId);
+                if (!quest || !quest.completed || quest.claimed) return;
+                
+                // Process reward
+                const reward = quest.reward;
+                switch (reward.type) {
+                    case 'xp':
+                        addExperience(reward.amount);
+                        showTooltip(`Gained ${reward.amount} XP!`, game.player.x, game.player.y);
+                        break;
+                    case 'resource':
+                        game.resources[reward.resource] += reward.amount;
+                        showTooltip(`Gained ${reward.amount} ${reward.resource}!`, game.player.x, game.player.y);
+                        break;
+                    case 'gem':
+                        // Create the gem
+                        const gem = {
+                            type: reward.gemType,
+                            equipped: false
+                        };
+                        game.gems.push(gem);
+                        showTooltip(`Gained a ${gemTypes[reward.gemType].name}!`, game.player.x, game.player.y);
+                        break;
+                    case 'item':
+                        // Add to inventory
+                        game.inventory.push(reward.itemType);
+                        showTooltip(`Gained a ${reward.itemType.replace('_', ' ')}!`, game.player.x, game.player.y);
+                        
+                        // Check if this unlocks new quests
+                        checkQuestUnlocks();
+                        break;
+                }
+                
+                // Mark as claimed
+                quest.claimed = true;
+                
+                // Move to completed quests
+                game.activeQuests = game.activeQuests.filter(q => q.id !== questId);
+                game.completedQuests.push(quest);
+                
+                // Unlock next level quest if available
+                unlockNextQuestLevel(quest);
+                
+                // Update UI
+                updateQuestsUI();
+                updateUI();
+            }
+            
+            // Unlock next quest level
+            function unlockNextQuestLevel(completedQuest) {
+                const [questType, level] = completedQuest.id.split('_');
+                const nextLevel = parseInt(level) + 1;
+                const nextQuestId = `${questType}_${nextLevel}`;
+                
+                // Find the next level quest
+                const nextQuest = game.quests.find(q => q.id === nextQuestId);
+                if (nextQuest && !game.activeQuests.includes(nextQuest) && !game.completedQuests.includes(nextQuest)) {
+                    game.activeQuests.push(nextQuest);
+                    showQuestNotification(`New quest unlocked: ${nextQuest.title}!`);
+                }
+            }
+            
+            // Check for quest unlocks based on conditions
+            function checkQuestUnlocks() {
+                for (const quest of game.quests) {
+                    if (quest.locked && quest.unlockCondition && quest.unlockCondition()) {
+                        quest.locked = false;
+                        
+                        // Only add level 1 quests to active quests
+                        if (quest.level === 1 && !game.activeQuests.includes(quest) && !game.completedQuests.includes(quest)) {
+                            game.activeQuests.push(quest);
+                            showQuestNotification(`New quest type unlocked: ${quest.title}!`);
+                        }
+                    }
+                }
+                
+                updateQuestsUI();
+            }
+            
+            // Update quests UI
+            function updateQuestsUI() {
+                const questsContainer = document.getElementById('quests-container');
+                if (!questsContainer) return;
+                
+                if (game.activeQuests.length === 0) {
+                    questsContainer.innerHTML = '<p>No active quests. Keep mining to unlock more!</p>';
+                    return;
+                }
+                
+                let html = '';
+                
+                // Active quests
+                html += '<h4>Active Quests</h4>';
+                
+                game.activeQuests.forEach(quest => {
+                    const progressPercent = (quest.progress / quest.target) * 100;
+                    const completeClass = quest.completed ? 'complete' : '';
+                    
+                    html += `
+                        <div class="quest-item ${completeClass}" data-id="${quest.id}">
+                            <div class="quest-complete-indicator"></div>
+                            <div class="quest-title">${quest.title}</div>
+                            <div class="quest-description">${quest.description}</div>
+                            <div class="quest-progress">
+                                Progress: ${quest.progress}/${quest.target}
+                                <div class="quest-progress-bar">
+                                    <div class="quest-progress-fill" style="width: ${progressPercent}%"></div>
+                                </div>
+                            </div>
+                            <div class="quest-reward">
+                                Reward: ${formatReward(quest.reward)}
+                            </div>
+                            <button class="quest-claim-button" data-id="${quest.id}">Claim</button>
+                        </div>
+                    `;
+                });
+                
+                // Completed quests
+                if (game.completedQuests.length > 0) {
+                    html += '<h4>Completed Quests</h4>';
+                    
+                    game.completedQuests.slice(-3).forEach(quest => {
+                        html += `
+                            <div class="quest-item complete claimed" data-id="${quest.id}">
+                                <div class="quest-complete-indicator"></div>
+                                <div class="quest-title">${quest.title}</div>
+                                <div class="quest-description">${quest.description}</div>
+                                <div class="quest-progress">
+                                    Completed!
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                questsContainer.innerHTML = html;
+                
+                // Add event listeners for claim buttons
+                const claimButtons = document.querySelectorAll('.quest-claim-button');
+                claimButtons.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const questId = e.target.dataset.id;
+                        claimQuestReward(questId);
+                        e.stopPropagation(); // Prevent quest item click
+                    });
+                });
+            }
+            
+            // Format reward for display
+            function formatReward(reward) {
+                switch (reward.type) {
+                    case 'xp':
+                        return `${reward.amount} XP`;
+                    case 'resource':
+                        return `${reward.amount} ${reward.resource}`;
+                    case 'gem':
+                        return gemTypes[reward.gemType].name;
+                    case 'item':
+                        return reward.itemType.replace('_', ' ');
+                    default:
+                        return 'Unknown';
+                }
+            }
+            
+            // Update UI
+            function updateUI() {
+                // Update resource counters
+                for (const resource in game.resources) {
+                    if (resourceCounters[resource]) {
+                        resourceCounters[resource].textContent = game.resources[resource];
+                    }
+                }
+                
+                // Update player level
+                document.getElementById('player-level').textContent = game.player.level;
+                
+                // Update XP bar
+                const xpPercent = (game.player.xp / game.player.xpToLevel) * 100;
+                document.getElementById('xp-fill').style.width = `${xpPercent}%`;
+                
+                // Update shop item costs
+                document.getElementById('pickaxe-cost').textContent = 50 * game.player.miningPower;
+                document.getElementById('bag-cost').textContent = 100 * (game.player.bagSize / 100);
+                
+                // Update gems inventory
+                updateGemsInventory();
+            }
+            
+            // Update gems inventory
+            function updateGemsInventory() {
+                const gemsContainer = document.getElementById('gems-container');
+                
+                if (game.gems.length === 0) {
+                    gemsContainer.innerHTML = '<p>No gems yet. Craft some!</p>';
+                    return;
+                }
+                
+                let html = '';
+                game.gems.forEach((gem, index) => {
+                    const gemType = gemTypes[gem.type];
+                    const equipped = gem.equipped ? 'equipped' : '';
+                    
+                    html += `
+                        <div class="gem-item shop-item ${equipped}" data-index="${index}">
+                            <div>
+                                <span class="gem-dot" style="background-color: ${gemType.color}"></span>
+                                ${gemType.name}
+                            </div>
+                            <button class="button equip-btn">${gem.equipped ? 'Equipped' : 'Equip'}</button>
+                        </div>
+                    `;
+                });
+                
+                gemsContainer.innerHTML = html;
+                
+                // Add event listeners to equip buttons
+                const equipButtons = document.querySelectorAll('.equip-btn');
+                equipButtons.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const gemItem = e.target.closest('.gem-item');
+                        const index = parseInt(gemItem.dataset.index);
+                        equipGem(index);
+                    });
+                });
+            }
+            
+            // Equip gem
+            function equipGem(index) {
+                const gem = game.gems[index];
+                const gemType = gemTypes[gem.type];
+                
+                // Unequip all gems of the same type
+                game.gems.forEach(g => {
+                    if (g.type === gem.type) {
+                        g.equipped = false;
+                    }
+                });
+                
+                // Equip the selected gem
+                gem.equipped = true;
+                
+                // Reset player stats to base values
+                game.player.miningPower = 1;
+                game.player.miningSpeed = 300;
+                game.player.luckModifier = 1;
+                
+                // Apply all equipped gem effects
+                game.gems.forEach(g => {
+                    if (g.equipped) {
+                        const type = gemTypes[g.type];
+                        const effect = type.effect;
+                        
+                        if (effect === 'miningSpeed') {
+                            // Lower is faster for mining speed
+                            game.player.miningSpeed = Math.max(50, game.player.miningSpeed + type.bonus);
+                        } else {
+                            // Higher is better for other stats
+                            game.player[effect] += type.bonus;
+                        }
+                    }
+                });
+                
+                updateGemsInventory();
+                showTooltip(`${gemType.name} equipped!`, game.player.x, game.player.y);
+            }
+            
+            // Craft gem
+            function craftGem(type) {
+                const gemCost = {
+                    strength: { resource: 'copper', amount: 15 },
+                    speed: { resource: 'silver', amount: 20 },
+                    fortune: { resource: 'gold', amount: 10 }
+                };
+                
+                const cost = gemCost[type];
+                
+                // Check if player has enough resources
+                if (game.resources[cost.resource] < cost.amount) {
+                    showTooltip(`Need ${cost.amount} ${cost.resource}!`, game.player.x, game.player.y);
+                    return;
+                }
+                
+                // Deduct resources
+                game.resources[cost.resource] -= cost.amount;
+                
+                // Create the gem
+                const gem = {
+                    type: type,
+                    equipped: false
+                };
+                
+                game.gems.push(gem);
+                
+                // Auto-equip if it's the first gem of its type
+                const gemOfSameType = game.gems.filter(g => g.type === type);
+                if (gemOfSameType.length === 1) {
+                    equipGem(game.gems.length - 1);
+                }
+                
+                updateUI();
+                showTooltip(`${gemTypes[type].name} crafted!`, game.player.x, game.player.y);
+            }
+            
+            // Setup event listeners
+            function setupEventListeners() {
+                // Keyboard controls
+                document.addEventListener('keydown', (e) => {
+                    if (game.player.mining) return;
+                    
+                    switch (e.key.toLowerCase()) {
+                        case 'w':
+                            movePlayer(0, -1);
+                            break;
+                        case 'a':
+                            movePlayer(-1, 0);
+                            break;
+                        case 's':
+                            movePlayer(0, 1);
+                            break;
+                        case 'd':
+                            movePlayer(1, 0);
+                            break;
+                        case ' ':
+                        case 'spacebar': // Some browsers use 'Spacebar' instead of ' '
+                            e.preventDefault(); // Prevent page scrolling
+                            // Toggle menu
+                            const menuPanel = document.getElementById('menu-panel');
+                            menuPanel.style.display = menuPanel.style.display === 'none' ? 'block' : 'none';
+                            break;
+                    }
+                });
+                
+                // Menu toggle
+                document.getElementById('menu-toggle').addEventListener('click', () => {
+                    const menuPanel = document.getElementById('menu-panel');
+                    menuPanel.style.display = menuPanel.style.display === 'none' ? 'block' : 'none';
+                });
+                
+                // Tab switcher
+                const tabs = document.querySelectorAll('.tab');
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        // Hide all tab contents
+                        document.querySelectorAll('.tab-content').forEach(content => {
+                            content.classList.remove('active');
+                        });
+                        
+                        // Remove active class from all tabs
+                        tabs.forEach(t => t.classList.remove('active'));
+                        
+                        // Add active class to clicked tab
+                        tab.classList.add('active');
+                        
+                        // Show corresponding tab content
+                        const tabName = tab.dataset.tab;
+                        document.getElementById(`${tabName}-tab`).classList.add('active');
+                    });
+                });
+                
+                // Shop items
+                document.getElementById('upgrade-pickaxe').addEventListener('click', () => {
+                    const cost = 50 * game.player.miningPower;
+                    
+                    if (game.resources.stone >= cost) {
+                        game.resources.stone -= cost;
+                        game.player.miningPower += 1;
+                        updateUI();
+                        showTooltip(`Pickaxe upgraded! Power +1`, game.player.x, game.player.y);
+                    } else {
+                        showTooltip(`Need ${cost} stone!`, game.player.x, game.player.y);
+                    }
+                });
+                
+                document.getElementById('upgrade-bag').addEventListener('click', () => {
+                    const cost = 100 * (game.player.bagSize / 100);
+                    
+                    if (game.resources.copper >= cost) {
+                        game.resources.copper -= cost;
+                        game.player.bagSize += 100;
+                        updateUI();
+                        showTooltip(`Bag upgraded! +100 capacity`, game.player.x, game.player.y);
+                    } else {
+                        showTooltip(`Need ${cost} copper!`, game.player.x, game.player.y);
+                    }
+                });
+                
+                // Crafting items
+                document.getElementById('craft-strength-gem').addEventListener('click', () => {
+                    craftGem('strength');
+                });
+                
+                document.getElementById('craft-speed-gem').addEventListener('click', () => {
+                    craftGem('speed');
+                });
+                
+                document.getElementById('craft-fortune-gem').addEventListener('click', () => {
+                    craftGem('fortune');
+                });
+            }
+            
+            // Game loop
+            function startGameLoop() {
+                let lastTimestamp = 0;
+                
+                function gameLoop(timestamp) {
+                    // Calculate delta time
+                    const deltaTime = timestamp - lastTimestamp;
+                    lastTimestamp = timestamp;
+                    
+                    // Apply gravity if not mining
+                    if (!game.player.mining) {
+                        applyGravity();
+                    }
+                    
+                    requestAnimationFrame(gameLoop);
+                }
+                
+                requestAnimationFrame(gameLoop);
+            }
+            
+            // Initialize the game
+            init();
+        });
+    </script>
+</body>
+</html>
