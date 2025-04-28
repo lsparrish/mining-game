@@ -3,23 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pixel Miner Pro</title>
+    <title>Pixel Miner</title>
     <style>
         :root {
             --primary: #3498db;
+            --secondary: #2ecc71;
+            --accent: #e74c3c;
             --bg-dark: #1a1a2e;
             --bg-medium: #16213e;
             --bg-light: #0f3460;
             --success: #2ecc71;
             --danger: #e74c3c;
             --gold: #f1c40f;
+            --text: #ecf0f1;
         }
         body {
             margin: 0;
             padding: 0;
             background-color: var(--bg-dark);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: white;
+            color: var(--text);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -35,7 +38,7 @@
             position: relative;
             width: 640px;
             height: 480px;
-            margin-top: 10px;
+            margin-top: 5px;
             box-shadow: 0 0 30px rgba(52, 152, 219, 0.3);
             border-radius: 8px;
             overflow: hidden;
@@ -52,14 +55,21 @@
         .resources {
             display: flex;
             align-items: center;
+            flex-wrap: wrap;
         }
         .resource {
             display: flex;
             align-items: center;
-            margin-right: 15px;
-            padding: 5px 10px;
+            margin-right: 10px;
+            margin-bottom: 5px;
+            padding: 5px 8px;
             background-color: var(--bg-light);
             border-radius: 20px;
+            transition: transform 0.2s;
+        }
+        .resource:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
         }
         .resource-icon {
             width: 16px;
@@ -71,6 +81,7 @@
         .copper-icon { background-color: #CD7F32; }
         .silver-icon { background-color: #C0C0C0; }
         .gold-icon { background-color: #FFD700; }
+        .diamond-icon { background-color: #3498db; }
         .energy-icon { background-color: #2ecc71; }
         .player-stats {
             display: flex;
@@ -96,16 +107,16 @@
             position: absolute;
             top: 10px;
             right: 10px;
-            background-color: rgba(22, 33, 62, 0.9);
+            background-color: rgba(22, 33, 62, 0.95);
             padding: 15px;
             border-radius: 8px;
             border: 1px solid var(--primary);
             box-shadow: 0 0 20px rgba(52, 152, 219, 0.5);
             display: none;
-            width: 300px; /* Increased width */
-            max-height: 400px; /* Added max height */
-            overflow-y: auto; /* Added vertical scrolling */
-            z-index: 1000; /* Ensure it's above other elements */
+            width: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1000;
         }
         .panel-title {
             margin-top: 0;
@@ -115,7 +126,7 @@
         }
         .shop-item, .crafting-item {
             cursor: pointer;
-            padding: 8px;
+            padding: 10px;
             margin: 8px 0;
             background-color: var(--bg-light);
             border-radius: 4px;
@@ -123,11 +134,16 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap; /* Allow items to wrap */
         }
         .shop-item:hover, .crafting-item:hover {
             background-color: var(--primary);
             transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .shop-item-desc {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 3px;
         }
         .button {
             background-color: var(--primary);
@@ -142,31 +158,38 @@
         .button:hover {
             background-color: #2980b9;
             transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .button:active {
+            transform: translateY(0);
         }
         .tab-container {
             display: flex;
             margin-bottom: 10px;
-            flex-wrap: wrap; /* Allow tabs to wrap */
         }
         .tab {
             flex: 1;
             text-align: center;
-            padding: 5px;
+            padding: 8px 5px;
             cursor: pointer;
             background-color: var(--bg-light);
             border-right: 1px solid var(--bg-medium);
-            min-width: 60px; /* Ensure minimum width for tabs */
+            transition: all 0.2s;
         }
         .tab:last-child {
             border-right: none;
         }
+        .tab:hover {
+            background-color: #1a4a73;
+        }
         .tab.active {
             background-color: var(--primary);
+            box-shadow: inset 0 -3px 0 rgba(255,255,255,0.3);
         }
         .tab-content {
             display: none;
-            overflow-y: auto; /* Add scroll for tab content */
-            max-height: 320px; /* Maximum height for scrollable content */
+            overflow-y: auto;
+            max-height: 320px;
         }
         .tab-content.active {
             display: block;
@@ -226,7 +249,6 @@
         .equipped {
             border: 2px solid var(--success);
         }
-        /* Quest System Styles */
         .quest-notification {
             position: absolute;
             top: 80px;
@@ -249,7 +271,7 @@
         }
         .quest-item {
             cursor: pointer;
-            padding: 8px;
+            padding: 10px;
             margin: 8px 0;
             background-color: var(--bg-light);
             border-radius: 4px;
@@ -319,7 +341,6 @@
         .complete .quest-claim-button {
             display: inline-block;
         }
-        /* Energy System Styles */
         .energy-bar-container {
             width: 100%;
             height: 8px;
@@ -333,7 +354,6 @@
             background-color: #2ecc71;
             transition: width 0.3s;
         }
-        /* Skills and Perks System Styles */
         .skill-tree {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -343,21 +363,22 @@
         .skill-item {
             background-color: var(--bg-light);
             border-radius: 4px;
-            padding: 8px;
+            padding: 10px;
             position: relative;
             transition: all 0.3s;
         }
         .skill-item:hover {
             background-color: var(--primary);
-        }
-        .skill-icon {
-            font-size: 18px;
-            margin-right: 5px;
+            transform: translateY(-2px);
         }
         .skill-name {
             font-weight: bold;
             display: flex;
             align-items: center;
+        }
+        .skill-icon {
+            font-size: 18px;
+            margin-right: 5px;
         }
         .skill-description {
             font-size: 12px;
@@ -397,38 +418,6 @@
         .skill-upgrade-btn:disabled {
             background-color: #888;
             cursor: not-allowed;
-        }
-        .perk-list {
-            margin-top: 15px;
-        }
-        .perk-item {
-            background-color: var(--bg-light);
-            border-radius: 4px;
-            padding: 8px;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-        }
-        .perk-item.locked {
-            opacity: 0.6;
-        }
-        .perk-icon {
-            font-size: 20px;
-            margin-right: 8px;
-        }
-        .perk-info {
-            flex-grow: 1;
-        }
-        .perk-name {
-            font-weight: bold;
-        }
-        .perk-description {
-            font-size: 12px;
-            color: #ccc;
-        }
-        .perk-level {
-            font-size: 12px;
-            color: #f1c40f;
         }
         .skill-points {
             background-color: var(--bg-medium);
@@ -513,45 +502,174 @@
             font-size: 12px;
         }
         
-        /* Custom scrollbar styles */
-        ::-webkit-scrollbar {
-            width: 8px;
+        /* Auto-mine button */
+        .auto-mine-container {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .auto-mine-toggle {
+            background-color: var(--bg-light);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        .auto-mine-toggle:hover {
+            background-color: var(--primary);
+        }
+        .auto-mine-toggle.active {
+            background-color: var(--success);
+        }
+        .auto-mine-icon {
+            margin-right: 8px;
+            font-size: 16px;
         }
         
-        ::-webkit-scrollbar-track {
-            background: var(--bg-dark);
-            border-radius: 4px;
+        /* Bonus particles effect */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            border-radius: 50%;
+            z-index: 1000;
+            animation: particle-float 1.5s forwards;
+        }
+        @keyframes particle-float {
+            0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) rotate(180deg); opacity: 0; }
         }
         
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary);
-            border-radius: 4px;
+        /* Tutorial tooltip */
+        .tutorial-tip {
+            position: absolute;
+            background-color: rgba(46, 204, 113, 0.9);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            z-index: 1100;
+            max-width: 250px;
+            box-shadow: 0 0 15px rgba(46, 204, 113, 0.7);
+            pointer-events: none;
+            animation: tipPop 0.5s forwards;
+        }
+        @keyframes tipPop {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .tutorial-arrow {
+            position: absolute;
+            width: 0; 
+            height: 0; 
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid rgba(46, 204, 113, 0.9);
         }
         
-        ::-webkit-scrollbar-thumb:hover {
-            background: #2980b9;
+        /* Daily bonus */
+        .daily-bonus {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid var(--gold);
+            box-shadow: 0 0 30px rgba(241, 196, 15, 0.7);
+            z-index: 1000;
+            text-align: center;
+            animation: popIn 0.5s forwards;
+        }
+        .daily-bonus-title {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: var(--gold);
+        }
+        .daily-reward {
+            margin: 5px 0;
+            font-size: 18px;
+        }
+        .claim-bonus {
+            background-color: var(--gold);
+            border: none;
+            color: var(--bg-dark);
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .claim-bonus:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(241, 196, 15, 0.5);
         }
         
-        /* IMPROVEMENT 1: Mobile responsive design */
+        /* Mobile responsive design */
         @media (max-width: 640px) {
             .game-container, .ui-container {
                 width: 100%;
                 max-width: 640px;
             }
-            
             .resources {
                 flex-wrap: wrap;
                 justify-content: center;
             }
-            
             .resource {
                 margin: 3px;
             }
+            .ui-panel {
+                width: 80%;
+                left: 10%;
+                right: 10%;
+            }
+            .mobile-controls {
+                display: flex;
+                justify-content: center;
+                margin-top: 10px;
+            }
+            .mobile-btn {
+                width: 50px;
+                height: 50px;
+                background-color: var(--bg-light);
+                border-radius: 50%;
+                margin: 0 5px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 24px;
+                cursor: pointer;
+            }
+            .mobile-btn:active {
+                background-color: var(--primary);
+            }
+        }
+        
+        /* Scrollbar styles */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2980b9;
         }
     </style>
 </head>
 <body>
-    <h1 class="game-header">Pixel Miner Pro</h1>
+    <h1 class="game-header">Pixel Miner Deluxe</h1>
     <div class="ui-container">
         <div class="resources">
             <div class="resource">
@@ -569,6 +687,10 @@
             <div class="resource">
                 <div class="resource-icon gold-icon"></div>
                 <span id="gold-count">0</span>
+            </div>
+            <div class="resource">
+                <div class="resource-icon diamond-icon"></div>
+                <span id="diamond-count">0</span>
             </div>
         </div>
         <div class="player-stats">
@@ -598,32 +720,63 @@
             
             <div class="tab-content active" id="shop-tab">
                 <div class="shop-item" id="upgrade-pickaxe">
-                    <div>Upgrade Pickaxe</div>
+                    <div>
+                        <div>Upgrade Pickaxe</div>
+                        <div class="shop-item-desc">+1 Mining Power</div>
+                    </div>
                     <div><span id="pickaxe-cost">50</span> stone</div>
                 </div>
                 <div class="shop-item" id="upgrade-bag">
-                    <div>Bigger Bag</div>
+                    <div>
+                        <div>Bigger Backpack</div>
+                        <div class="shop-item-desc">+100 Capacity</div>
+                    </div>
                     <div><span id="bag-cost">100</span> copper</div>
                 </div>
-                <!-- IMPROVEMENT 2: Added a new shop item -->
                 <div class="shop-item" id="upgrade-energy">
-                    <div>Energy Boost</div>
+                    <div>
+                        <div>Energy Module</div>
+                        <div class="shop-item-desc">+25 Max Energy</div>
+                    </div>
                     <div><span id="energy-cost">50</span> silver</div>
+                </div>
+                <div class="shop-item" id="upgrade-auto-mine">
+                    <div>
+                        <div>Auto-Miner</div>
+                        <div class="shop-item-desc">15% faster auto-mining</div>
+                    </div>
+                    <div><span id="auto-mine-cost">30</span> gold</div>
                 </div>
             </div>
             
             <div class="tab-content" id="crafting-tab">
                 <div class="crafting-item" id="craft-strength-gem">
-                    <div>Strength Gem</div>
+                    <div>
+                        <div>Strength Gem</div>
+                        <div class="shop-item-desc">+1.5 Mining Power</div>
+                    </div>
                     <div>15 copper</div>
                 </div>
                 <div class="crafting-item" id="craft-speed-gem">
-                    <div>Speed Gem</div>
+                    <div>
+                        <div>Speed Gem</div>
+                        <div class="shop-item-desc">Reduces mining time by 75ms</div>
+                    </div>
                     <div>20 silver</div>
                 </div>
                 <div class="crafting-item" id="craft-fortune-gem">
-                    <div>Fortune Gem</div>
+                    <div>
+                        <div>Fortune Gem</div>
+                        <div class="shop-item-desc">+30% Luck</div>
+                    </div>
                     <div>10 gold</div>
+                </div>
+                <div class="crafting-item" id="craft-energy-gem">
+                    <div>
+                        <div>Energy Gem</div>
+                        <div class="shop-item-desc">+10 Energy Regen</div>
+                    </div>
+                    <div>5 diamond</div>
                 </div>
             </div>
             
@@ -641,10 +794,6 @@
                 <div class="skill-tree" id="skill-tree">
                     <!-- Skills will be added here dynamically -->
                 </div>
-                <h4>Perks</h4>
-                <div class="perk-list" id="perk-list">
-                    <!-- Perks will be added here dynamically -->
-                </div>
             </div>
             
             <div class="tab-content" id="quests-tab">
@@ -654,11 +803,26 @@
             </div>
         </div>
         
-        <div class="version">v0.0.2</div>
+        <div class="auto-mine-container">
+            <button class="auto-mine-toggle" id="auto-mine-toggle">
+                <span class="auto-mine-icon">⚒️</span> Auto-Mine: OFF
+            </button>
+        </div>
+        
+        <!-- Mobile Controls (shown on small screens) -->
+        <div class="mobile-controls" id="mobile-controls" style="display: none">
+            <div class="mobile-btn" id="mobile-left">◀</div>
+            <div class="mobile-btn" id="mobile-up">▲</div>
+            <div class="mobile-btn" id="mobile-down">▼</div>
+            <div class="mobile-btn" id="mobile-right">▶</div>
+            <div class="mobile-btn" id="mobile-menu">☰</div>
+        </div>
+        
+        <div class="version">v2.0.0</div>
     </div>
     
     <div class="controls">
-        WASD keys to move and mine blocks, Space to toggle menu. Complete quests to progress!
+        WASD to move/mine, Space to toggle menu, M for auto-mine
     </div>
 
     <script>
@@ -681,16 +845,19 @@
                     skillPoints: 0,
                     totalSkillPoints: 0,
                     mining: false,
-                    miningSpeed: 300,
+                    miningSpeed: 250,
                     miningPower: 1,
-                    bagSize: 100,
+                    bagSize: 150,
                     luckModifier: 1,
                     energy: 100,
                     maxEnergy: 100,
-                    energyRegen: 5,
-                    energyCost: 10,
-                    criticalChance: 0.05,
-                    criticalMultiplier: 1.5,
+                    energyRegen: 8,
+                    energyCost: 8,
+                    criticalChance: 0.08,
+                    criticalMultiplier: 1.8,
+                    autoMine: false,
+                    autoMineInterval: null,
+                    autoMineSpeed: 1500,
                     skills: {
                         strength: {
                             level: 0,
@@ -704,52 +871,56 @@
                             level: 0,
                             maxLevel: 10,
                             name: "Speed",
-                            description: "Reduces mining time by 15ms per level",
-                            effect: (level) => level * 15,
+                            description: "Reduces mining time by 20ms per level",
+                            effect: (level) => level * 20,
                             icon: "⚡"
                         },
                         fortune: {
                             level: 0,
                             maxLevel: 10,
                             name: "Fortune",
-                            description: "Increases chance of finding bonus resources by 3% per level",
-                            effect: (level) => level * 0.03,
+                            description: "Increases chance of finding bonus resources by 4% per level",
+                            effect: (level) => level * 0.04,
                             icon: "🍀"
                         },
                         energy: {
                             level: 0,
                             maxLevel: 5,
                             name: "Endurance",
-                            description: "Increases max energy by 20 per level",
-                            effect: (level) => level * 20,
+                            description: "Increases max energy by 25 per level",
+                            effect: (level) => level * 25,
                             icon: "🔋"
                         },
                         critical: {
                             level: 0,
                             maxLevel: 5,
                             name: "Precision",
-                            description: "Increases critical hit chance by 5% per level",
-                            effect: (level) => level * 0.05,
+                            description: "Increases critical hit chance by 6% per level",
+                            effect: (level) => level * 0.06,
                             icon: "🎯"
                         },
                         efficiency: {
                             level: 0,
                             maxLevel: 5,
                             name: "Efficiency",
-                            description: "Reduces energy cost when mining by 5% per level",
-                            effect: (level) => level * 0.05,
+                            description: "Reduces energy cost when mining by 8% per level",
+                            effect: (level) => level * 0.08,
                             icon: "⚙️"
                         }
                     },
                     perks: []
                 },
-                resources: { stone: 0, copper: 0, silver: 0, gold: 0 },
+                resources: { stone: 0, copper: 0, silver: 0, gold: 0, diamond: 0 },
                 grid: [],
                 gems: [],
                 quests: [],
                 activeQuests: [],
                 completedQuests: [],
-                inventory: []
+                inventory: [],
+                tutorialState: 0,
+                tutorialComplete: false,
+                lastPlayTime: null,
+                savedData: null
             };
             
             // Resource counters
@@ -757,64 +928,64 @@
                 stone: document.getElementById('stone-count'),
                 copper: document.getElementById('copper-count'),
                 silver: document.getElementById('silver-count'),
-                gold: document.getElementById('gold-count')
+                gold: document.getElementById('gold-count'),
+                diamond: document.getElementById('diamond-count')
             };
             
             // Block types
             const blockTypes = {
-		    air: { color: 'transparent' },
-		    stone: { 
-			fillColor: '#777', 
-			strokeColor: '#555',
-			value: 'stone', 
-			hardness: 1,
-			xp: 5
-		    },
-		    copper: { 
-			fillColor: '#CD7F32', 
-			strokeColor: '#A35719',
-			value: 'copper', 
-			hardness: 2,
-			xp: 10
-		    },
-		    silver: { 
-			fillColor: '#C0C0C0', 
-			strokeColor: '#A0A0A0',
-			value: 'silver', 
-			hardness: 3,
-			xp: 15
-		    },
-		    gold: { 
-			fillColor: '#FFD700', 
-			strokeColor: '#B8860B',
-			value: 'gold', 
-			hardness: 4,
-			xp: 25
-		    },
-		    treasure: {
-			fillColor: '#9b59b6',
-			strokeColor: '#8e44ad',
-			value: 'treasure',
-			hardness: 2,
-			xp: 50
-		    },
-		    food: {
-			fillColor: '#2ecc71', 
-			strokeColor: '#27ae60',
-			value: 'food',
-			hardness: 1, // Easy to mine
-			xp: 5,
-			energyRestore: 200 // Amount of energy restored when mined
-		    },
-		    // IMPROVEMENT 3: Added a new block type - diamond
-		    diamond: {
-			fillColor: '#3498db',
-			strokeColor: '#2980b9',
-			value: 'diamond',
-			hardness: 5,
-			xp: 100
-		    }
-		};
+                air: { color: 'transparent' },
+                stone: { 
+                    fillColor: '#777', 
+                    strokeColor: '#555',
+                    value: 'stone', 
+                    hardness: 1,
+                    xp: 5
+                },
+                copper: { 
+                    fillColor: '#CD7F32', 
+                    strokeColor: '#A35719',
+                    value: 'copper', 
+                    hardness: 2,
+                    xp: 10
+                },
+                silver: { 
+                    fillColor: '#C0C0C0', 
+                    strokeColor: '#A0A0A0',
+                    value: 'silver', 
+                    hardness: 3,
+                    xp: 15
+                },
+                gold: { 
+                    fillColor: '#FFD700', 
+                    strokeColor: '#B8860B',
+                    value: 'gold', 
+                    hardness: 4,
+                    xp: 25
+                },
+                diamond: {
+                    fillColor: '#3498db',
+                    strokeColor: '#2980b9',
+                    value: 'diamond',
+                    hardness: 5,
+                    xp: 50
+                },
+                treasure: {
+                    fillColor: '#9b59b6',
+                    strokeColor: '#8e44ad',
+                    value: 'treasure',
+                    hardness: 2,
+                    xp: 40
+                },
+                food: {
+                    fillColor: '#2ecc71', 
+                    strokeColor: '#27ae60',
+                    value: 'food',
+                    hardness: 1,
+                    xp: 5,
+                    energyRestore: 40
+                }
+            };
             
             // Gem types
             const gemTypes = {
@@ -822,19 +993,25 @@
                     name: 'Strength Gem',
                     color: '#e74c3c',
                     effect: 'miningPower',
-                    bonus: 1
+                    bonus: 1.5
                 },
                 speed: {
                     name: 'Speed Gem',
                     color: '#3498db',
                     effect: 'miningSpeed',
-                    bonus: -50
+                    bonus: -75
                 },
                 fortune: {
                     name: 'Fortune Gem',
                     color: '#f1c40f',
                     effect: 'luckModifier',
-                    bonus: 0.2
+                    bonus: 0.3
+                },
+                energy: {
+                    name: 'Energy Gem',
+                    color: '#2ecc71',
+                    effect: 'energyRegen',
+                    bonus: 10
                 }
             };
             
@@ -844,7 +1021,7 @@
                     {
                         id: "treasure_hunter",
                         name: "Treasure Hunter",
-                        description: "Increases chance of finding treasure blocks by 15%",
+                        description: "Increases chance of finding treasure blocks by 20%",
                         unlockLevel: 5,
                         icon: "🔍",
                         unlocked: false
@@ -852,7 +1029,7 @@
                     {
                         id: "resource_magnet",
                         name: "Resource Magnet",
-                        description: "10% chance to not consume a block when mining",
+                        description: "15% chance to not consume a block when mining",
                         unlockLevel: 10,
                         icon: "🧲",
                         unlocked: false
@@ -860,7 +1037,7 @@
                     {
                         id: "gem_master",
                         name: "Gem Master",
-                        description: "Increases all gem effects by 25%",
+                        description: "Increases all gem effects by 30%",
                         unlockLevel: 15,
                         icon: "💎",
                         unlocked: false
@@ -907,7 +1084,7 @@
                 
                 applyPerkEffects: function() {
                     // Reset any perk-based effects first
-                    game.player.energyRegen = 5;
+                    game.player.energyRegen = 8;
                     
                     // Then apply each active perk
                     game.player.perks.forEach(perkId => {
@@ -922,7 +1099,7 @@
                                 // Applied when calculating gem effects
                                 break;
                             case "energetic":
-                                game.player.energyRegen = 7.5; // 50% boost from base 5
+                                game.player.energyRegen = 12; // 50% boost from base 8
                                 break;
                             case "deep_miner":
                                 // Applied in block generation logic
@@ -1040,13 +1217,226 @@
             
             // Initialize game
             function init() {
-                generateWorld();
+                loadGame();
+                
+                if (!game.savedData) {
+                    generateWorld();
+                    showWelcomeTutorial();
+                } else {
+                    restoreGame(game.savedData);
+                    checkDailyBonus();
+                }
+                
                 createPlayer();
                 setupEventListeners();
                 startGameLoop();
-                initializeQuests();
+                
+                if (!game.savedData) {
+                    initializeQuests();
+                }
+                
                 initializeProgressionSystem();
                 updateUI();
+                
+                // Set up auto-save
+                setInterval(saveGame, 10000); // Save every 10 seconds
+            }
+            
+            // Save game
+            function saveGame() {
+                const saveData = {
+                    player: game.player,
+                    resources: game.resources,
+                    gems: game.gems,
+                    quests: game.quests,
+                    activeQuests: game.activeQuests,
+                    completedQuests: game.completedQuests,
+                    inventory: game.inventory,
+                    tutorialComplete: game.tutorialComplete,
+                    lastPlayTime: new Date().getTime()
+                };
+                
+                localStorage.setItem('pixelMinerSave', JSON.stringify(saveData));
+            }
+            
+            // Load game
+            function loadGame() {
+                try {
+                    const saveData = localStorage.getItem('pixelMinerSave');
+                    if (saveData) {
+                        game.savedData = JSON.parse(saveData);
+                    }
+                } catch (e) {
+                    console.error('Error loading saved game:', e);
+                }
+            }
+            
+            // Restore game state
+            function restoreGame(saveData) {
+                game.player = saveData.player;
+                game.resources = saveData.resources;
+                game.gems = saveData.gems;
+                game.quests = saveData.quests;
+                game.activeQuests = saveData.activeQuests;
+                game.completedQuests = saveData.completedQuests;
+                game.inventory = saveData.inventory;
+                game.tutorialComplete = saveData.tutorialComplete;
+                game.lastPlayTime = saveData.lastPlayTime;
+                
+                generateWorld();
+            }
+            
+            // Check for daily bonus
+            function checkDailyBonus() {
+                if (!game.lastPlayTime) return;
+                
+                const now = new Date().getTime();
+                const lastPlay = new Date(game.lastPlayTime);
+                const today = new Date();
+                
+                // Check if last play was on a different day
+                if (lastPlay.getDate() !== today.getDate() || 
+                    lastPlay.getMonth() !== today.getMonth() || 
+                    lastPlay.getFullYear() !== today.getFullYear()) {
+                    
+                    showDailyBonus();
+                }
+            }
+            
+            // Show daily bonus
+            function showDailyBonus() {
+                const bonus = {
+                    xp: 200,
+                    resources: {
+                        stone: 50,
+                        copper: 25,
+                        silver: 10,
+                        gold: 5
+                    }
+                };
+                
+                const bonusElement = document.createElement('div');
+                bonusElement.className = 'daily-bonus';
+                
+                bonusElement.innerHTML = `
+                    <div class="daily-bonus-title">Daily Bonus!</div>
+                    <div>Welcome back, miner!</div>
+                    <div class="daily-reward">+${bonus.xp} XP</div>
+                    <div class="daily-reward">+${bonus.resources.stone} Stone</div>
+                    <div class="daily-reward">+${bonus.resources.copper} Copper</div>
+                    <div class="daily-reward">+${bonus.resources.silver} Silver</div>
+                    <div class="daily-reward">+${bonus.resources.gold} Gold</div>
+                    <button class="claim-bonus">Claim Rewards</button>
+                `;
+                
+                document.querySelector('.game-container').appendChild(bonusElement);
+                
+                // Add click event to claim button
+                bonusElement.querySelector('.claim-bonus').addEventListener('click', () => {
+                    // Add rewards
+                    addExperience(bonus.xp);
+                    
+                    for (const resource in bonus.resources) {
+                        game.resources[resource] += bonus.resources[resource];
+                    }
+                    
+                    updateUI();
+                    bonusElement.remove();
+                    
+                    // Show particles for excitement
+                    createBonusParticles();
+                });
+            }
+            
+            // Create bonus particles
+            function createBonusParticles() {
+                const colors = ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db', '#9b59b6'];
+                const container = document.querySelector('.game-container');
+                
+                for (let i = 0; i < 30; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    
+                    const size = Math.random() * 12 + 4;
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+                    particle.style.backgroundColor = color;
+                    
+                    // Random position
+                    const centerX = container.clientWidth / 2;
+                    const centerY = container.clientHeight / 2;
+                    
+                    particle.style.left = `${centerX}px`;
+                    particle.style.top = `${centerY}px`;
+                    
+                    // Random direction
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = Math.random() * 150 + 50;
+                    const tx = Math.cos(angle) * distance;
+                    const ty = Math.sin(angle) * distance;
+                    
+                    particle.style.setProperty('--tx', `${tx}px`);
+                    particle.style.setProperty('--ty', `${ty}px`);
+                    
+                    container.appendChild(particle);
+                    
+                    // Remove after animation
+                    setTimeout(() => {
+                        container.removeChild(particle);
+                    }, 1500);
+                }
+            }
+            
+            // Show welcome tutorial
+            function showWelcomeTutorial() {
+                game.tutorialState = 1;
+                
+                const tip = document.createElement('div');
+                tip.className = 'tutorial-tip';
+                tip.style.top = '150px';
+                tip.style.left = '50%';
+                tip.style.transform = 'translateX(-50%)';
+                tip.textContent = 'Welcome to Pixel Miner Deluxe! Use WASD keys to move your character and mine blocks.';
+                
+                const arrow = document.createElement('div');
+                arrow.className = 'tutorial-arrow';
+                arrow.style.left = '50%';
+                arrow.style.top = '100%';
+                arrow.style.transform = 'translateX(-50%)';
+                
+                tip.appendChild(arrow);
+                document.querySelector('.game-container').appendChild(tip);
+                
+                setTimeout(() => {
+                    tip.remove();
+                    game.tutorialState = 2;
+                    showSecondTutorial();
+                }, 5000);
+            }
+            
+            // Show second tutorial
+            function showSecondTutorial() {
+                const tip = document.createElement('div');
+                tip.className = 'tutorial-tip';
+                tip.style.top = '100px';
+                tip.style.right = '10px';
+                tip.textContent = 'Press SPACE to open the menu where you can buy upgrades, craft gems, and check quests.';
+                
+                const arrow = document.createElement('div');
+                arrow.className = 'tutorial-arrow';
+                arrow.style.left = '50%';
+                arrow.style.top = '100%';
+                arrow.style.transform = 'translateX(-50%)';
+                
+                tip.appendChild(arrow);
+                document.querySelector('.game-container').appendChild(tip);
+                
+                setTimeout(() => {
+                    tip.remove();
+                    game.tutorialComplete = true;
+                }, 5000);
             }
             
             // Initialize progression system
@@ -1065,6 +1455,29 @@
                 
                 // Update player stats
                 updatePlayerStats();
+                
+                // Check for mobile and setup mobile controls
+                checkMobile();
+            }
+            
+            // Check if on mobile and set up mobile controls
+            function checkMobile() {
+                const isMobile = window.innerWidth <= 768;
+                const mobileControls = document.getElementById('mobile-controls');
+                
+                if (isMobile) {
+                    mobileControls.style.display = 'flex';
+                    
+                    // Setup mobile control events
+                    document.getElementById('mobile-left').addEventListener('touchstart', () => movePlayer(-1, 0));
+                    document.getElementById('mobile-right').addEventListener('touchstart', () => movePlayer(1, 0));
+                    document.getElementById('mobile-up').addEventListener('touchstart', () => movePlayer(0, -1));
+                    document.getElementById('mobile-down').addEventListener('touchstart', () => movePlayer(0, 1));
+                    document.getElementById('mobile-menu').addEventListener('touchstart', () => {
+                        const menuPanel = document.getElementById('menu-panel');
+                        menuPanel.style.display = menuPanel.style.display === 'none' ? 'block' : 'none';
+                    });
+                }
             }
             
             // Add energy bar to UI
@@ -1181,9 +1594,10 @@
                         
                         // Apply Deep Miner perk if player has it
                         const deepMinerBonus = perkSystem.hasPerk('deep_miner') ? 0.1 : 0;
+                        
                         if (random < 0.10) {
-                		blockType = 'food';
-            		} else if (depth < 3) {
+                            blockType = 'food';
+                        } else if (depth < 3) {
                             blockType = 'stone';
                         } else if (depth < 6) {
                             blockType = random < 0.8 - deepMinerBonus ? 'stone' : 'copper';
@@ -1192,7 +1606,8 @@
                         } else {
                             blockType = random < 0.5 - (deepMinerBonus * 3) ? 'stone' : 
                                        (random < 0.7 ? 'copper' : 
-                                       (random < 0.9 ? 'silver' : 'gold'));
+                                       (random < 0.9 ? 'silver' : 
+                                       (random < 0.98 ? 'gold' : 'diamond')));
                         }
                         
                         // Apply Treasure Hunter perk for increased treasure chance
@@ -1205,7 +1620,6 @@
                         if (random > (1 - treasureChance) && depth > 5) {
                             blockType = 'treasure';
                         }
-                        
                         
                         game.grid[y][x] = {
                             type: blockType,
@@ -1257,41 +1671,44 @@
             }
             
             // Generate block details based on type
-	function generateBlockDetails(x, y, type) {
-	    const startX = x * BLOCK_SIZE;
-	    const startY = y * BLOCK_SIZE;
-	    let path = '';
-	    
-	    switch (type) {
-		case 'stone':
-		    path = `M${startX + 5},${startY + 10} L${startX + 10},${startY + 15} 
-			    M${startX + 20},${startY + 5} L${startX + 25},${startY + 15}`;
-		    break;
-		case 'copper':
-		    path = `M${startX + 10},${startY + 5} Q${startX + 15},${startY + 15} ${startX + 25},${startY + 10} 
-			    M${startX + 5},${startY + 20} Q${startX + 15},${startY + 25} ${startX + 20},${startY + 20}`;
-		    break;
-		case 'silver':
-		    path = `M${startX + 8},${startY + 8} L${startX + 12},${startY + 12} M${startX + 12},${startY + 8} L${startX + 8},${startY + 12}
-			    M${startX + 20},${startY + 15} L${startX + 24},${startY + 19} M${startX + 24},${startY + 15} L${startX + 20},${startY + 19}`;
-		    break;
-		case 'gold':
-		    path = `M${startX + 10},${startY + 10} A5,5 0 1,0 ${startX + 20},${startY + 10}
-			    M${startX + 15},${startY + 20} A3,3 0 1,0 ${startX + 21},${startY + 20}`;
-		    break;
-		case 'treasure':
-		    path = `M${startX + 16},${startY + 10} v8 M${startX + 16},${startY + 22} v0.1
-			    M${startX + 10},${startY + 15} Q${startX + 16},${startY + 5} ${startX + 22},${startY + 15}`;
-		    break;
-		case 'food':
-		    // Apple-like shape
-		    path = `M${startX + 16},${startY + 8} v-5 m-4,0 h8 
-			    M${startX + 16},${startY + 16} a6,8 0 1,0 0.1,0`;
-		    break;
-	    }
-	    
-	    return path;
-	}
+            function generateBlockDetails(x, y, type) {
+                const startX = x * BLOCK_SIZE;
+                const startY = y * BLOCK_SIZE;
+                let path = '';
+                
+                switch (type) {
+                    case 'stone':
+                        path = `M${startX + 5},${startY + 10} L${startX + 10},${startY + 15} 
+                                M${startX + 20},${startY + 5} L${startX + 25},${startY + 15}`;
+                        break;
+                    case 'copper':
+                        path = `M${startX + 10},${startY + 5} Q${startX + 15},${startY + 15} ${startX + 25},${startY + 10} 
+                                M${startX + 5},${startY + 20} Q${startX + 15},${startY + 25} ${startX + 20},${startY + 20}`;
+                        break;
+                    case 'silver':
+                        path = `M${startX + 8},${startY + 8} L${startX + 12},${startY + 12} M${startX + 12},${startY + 8} L${startX + 8},${startY + 12}
+                                M${startX + 20},${startY + 15} L${startX + 24},${startY + 19} M${startX + 24},${startY + 15} L${startX + 20},${startY + 19}`;
+                        break;
+                    case 'gold':
+                        path = `M${startX + 10},${startY + 10} A5,5 0 1,0 ${startX + 20},${startY + 10}
+                                M${startX + 15},${startY + 20} A3,3 0 1,0 ${startX + 21},${startY + 20}`;
+                        break;
+                    case 'diamond':
+                        path = `M${startX + 16},${startY + 8} L${startX + 24},${startY + 16} L${startX + 16},${startY + 24} L${startX + 8},${startY + 16} Z`;
+                        break;
+                    case 'treasure':
+                        path = `M${startX + 16},${startY + 10} v8 M${startX + 16},${startY + 22} v0.1
+                                M${startX + 10},${startY + 15} Q${startX + 16},${startY + 5} ${startX + 22},${startY + 15}`;
+                        break;
+                    case 'food':
+                        // Apple-like shape
+                        path = `M${startX + 16},${startY + 8} v-5 m-4,0 h8 
+                                M${startX + 16},${startY + 16} a6,8 0 1,0 0.1,0`;
+                        break;
+                }
+                
+                return path;
+            }
             
             // Create cloud
             function createCloud(x, y) {
@@ -1380,7 +1797,7 @@
                 mouth.setAttribute('stroke-width', '0.7');
                 player.appendChild(mouth);
                 
-                // L-shaped pickaxe (matching the image)
+                // L-shaped pickaxe
                 const pickaxe = document.createElementNS('http://www.w3.org/2000/svg', 'g');
                 pickaxe.setAttribute('id', 'pickaxe');
                 
@@ -1417,6 +1834,7 @@
                 
                 updatePlayerPosition();
             }
+            
             // Update player position
             function updatePlayerPosition() {
                 const x = game.player.x * BLOCK_SIZE;
@@ -1466,11 +1884,6 @@
                 updatePlayerPosition();
             }
             
-            // Apply gravity (disabled for free movement)
-            function applyGravity() {
-                return;
-            }
-            
             // Mine block
             function mineBlock(x, y) {
                 // Check boundaries
@@ -1500,14 +1913,28 @@
                 
                 // For treasures, we need to determine what random resource would be obtained
                 if (resourceToGet === 'treasure') {
-                    const resources = ['stone', 'copper', 'silver', 'gold'];
-                    resourceToGet = resources[Math.floor(Math.random() * resources.length)];
-                    amount = 5; // Treasures give 5x resources
+                    const resources = ['stone', 'copper', 'silver', 'gold', 'diamond'];
+                    const weights = [30, 25, 20, 15, 10]; // Weighted probabilities
+                    
+                    let totalWeight = weights.reduce((a, b) => a + b, 0);
+                    let random = Math.random() * totalWeight;
+                    
+                    let chosenIndex = 0;
+                    for (let i = 0; i < weights.length; i++) {
+                        if (random < weights[i]) {
+                            chosenIndex = i;
+                            break;
+                        }
+                        random -= weights[i];
+                    }
+                    
+                    resourceToGet = resources[chosenIndex];
+                    amount = Math.floor(Math.random() * 3) + 3; // 3-5 resources
                 }
                 
                 // Check if specific resource limit would be exceeded
                 if (game.resources[resourceToGet] + amount > game.player.bagSize) {
-                    showTooltip(`Not enough space for more ${resourceToGet}!`, game.player.x, game.player.y);
+                    showTooltip(`Backpack full! Can't hold more ${resourceToGet}!`, game.player.x, game.player.y);
                     return;
                 }
                 
@@ -1593,27 +2020,44 @@
                             
                             // Check for resource magnet perk (chance to not consume block)
                             let blockPreserved = false;
-                            if (perkSystem.hasPerk('resource_magnet') && Math.random() < 0.1) {
+                            if (perkSystem.hasPerk('resource_magnet') && Math.random() < 0.15) {
                                 blockPreserved = true;
                                 showTooltip("Block preserved!", x, y);
                             }
                             
                             if (block.type === 'food') {
-				    // Restore energy
-				    const energyRestored = blockTypes.food.energyRestore;
-				    game.player.energy = Math.min(game.player.energy + energyRestored, game.player.maxEnergy);
-				    showTooltip(`+${energyRestored} Energy!`, x, y);
-				    
-				    // Show visual effect for energy gain
-				    showEnergyGainEffect(x, y, energyRestored);
-			    }
-                            // Add resources based on block type
-                            if (block.type === 'treasure') {
+                                // Restore energy
+                                const energyRestored = blockTypes.food.energyRestore;
+                                game.player.energy = Math.min(game.player.energy + energyRestored, game.player.maxEnergy);
+                                showTooltip(`+${energyRestored} Energy!`, x, y);
+                                
+                                // Show visual effect for energy gain
+                                showEnergyGainEffect(x, y, energyRestored);
+                            } else if (block.type === 'treasure') {
                                 // Treasure gives a random resource
-                                const resources = ['stone', 'copper', 'silver', 'gold'];
-                                const randomResource = resources[Math.floor(Math.random() * resources.length)];
-                                game.resources[randomResource] += amount * 5;
-                                showTooltip(`Found ${amount * 5} ${randomResource}!`, x, y);
+                                const resources = ['stone', 'copper', 'silver', 'gold', 'diamond'];
+                                const weights = [30, 25, 20, 15, 10]; // Weighted probabilities
+                                
+                                let totalWeight = weights.reduce((a, b) => a + b, 0);
+                                let random = Math.random() * totalWeight;
+                                
+                                let chosenIndex = 0;
+                                for (let i = 0; i < weights.length; i++) {
+                                    if (random < weights[i]) {
+                                        chosenIndex = i;
+                                        break;
+                                    }
+                                    random -= weights[i];
+                                }
+                                
+                                const randomResource = resources[chosenIndex];
+                                const treasureAmount = Math.floor(Math.random() * 3) + 3; // 3-5 resources
+                                
+                                game.resources[randomResource] += treasureAmount;
+                                showTooltip(`Found ${treasureAmount} ${randomResource}!`, x, y);
+                                
+                                // Create treasure particles
+                                createTreasureParticles(x, y, randomResource);
                                 
                                 // Track quest progress for treasure
                                 game.activeQuests.forEach(quest => {
@@ -1622,7 +2066,11 @@
                                     }
                                 });
                             } else {
+                                // Normal resources
                                 game.resources[block.type] += amount;
+                                
+                                // Create resource particles
+                                createResourceParticles(x, y, block.type);
                             }
                             
                             // Add XP
@@ -1681,25 +2129,126 @@
                 }, interval);
             }
             
+            // Create resource particles
+            function createResourceParticles(x, y, resourceType) {
+                const blockX = x * BLOCK_SIZE + BLOCK_SIZE / 2;
+                const blockY = y * BLOCK_SIZE + BLOCK_SIZE / 2;
+                const container = document.querySelector('.game-container');
+                
+                // Get color based on resource type
+                let color;
+                switch (resourceType) {
+                    case 'stone': color = '#777'; break;
+                    case 'copper': color = '#CD7F32'; break;
+                    case 'silver': color = '#C0C0C0'; break;
+                    case 'gold': color = '#FFD700'; break;
+                    case 'diamond': color = '#3498db'; break;
+                    default: color = '#fff';
+                }
+                
+                // Create particles
+                for (let i = 0; i < 8; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    
+                    const size = Math.random() * 6 + 2;
+                    
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+                    particle.style.backgroundColor = color;
+                    
+                    // Position at block center
+                    particle.style.left = `${blockX}px`;
+                    particle.style.top = `${blockY}px`;
+                    
+                    // Random direction
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = Math.random() * 40 + 10;
+                    const tx = Math.cos(angle) * distance;
+                    const ty = Math.sin(angle) * distance;
+                    
+                    particle.style.setProperty('--tx', `${tx}px`);
+                    particle.style.setProperty('--ty', `${ty}px`);
+                    
+                    container.appendChild(particle);
+                    
+                    // Remove after animation
+                    setTimeout(() => {
+                        container.removeChild(particle);
+                    }, 1500);
+                }
+            }
+            
+            // Create treasure particles (more fancy)
+            function createTreasureParticles(x, y, resourceType) {
+                const blockX = x * BLOCK_SIZE + BLOCK_SIZE / 2;
+                const blockY = y * BLOCK_SIZE + BLOCK_SIZE / 2;
+                const container = document.querySelector('.game-container');
+                
+                // Get color based on resource type
+                let color;
+                switch (resourceType) {
+                    case 'stone': color = '#777'; break;
+                    case 'copper': color = '#CD7F32'; break;
+                    case 'silver': color = '#C0C0C0'; break;
+                    case 'gold': color = '#FFD700'; break;
+                    case 'diamond': color = '#3498db'; break;
+                    default: color = '#fff';
+                }
+                
+                // Create particles
+                for (let i = 0; i < 20; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    
+                    const size = Math.random() * 8 + 3;
+                    
+                    particle.style.width = `${size}px`;
+                    particle.style.height = `${size}px`;
+                    particle.style.backgroundColor = color;
+                    
+                    // Position at block center
+                    particle.style.left = `${blockX}px`;
+                    particle.style.top = `${blockY}px`;
+                    
+                    // Random direction
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = Math.random() * 60 + 20;
+                    const tx = Math.cos(angle) * distance;
+                    const ty = Math.sin(angle) * distance;
+                    
+                    particle.style.setProperty('--tx', `${tx}px`);
+                    particle.style.setProperty('--ty', `${ty}px`);
+                    
+                    container.appendChild(particle);
+                    
+                    // Remove after animation
+                    setTimeout(() => {
+                        container.removeChild(particle);
+                    }, 1500);
+                }
+            }
+            
             function showEnergyGainEffect(x, y, amount) {
-		    const blockX = x * BLOCK_SIZE + BLOCK_SIZE / 2;
-		    const blockY = y * BLOCK_SIZE + BLOCK_SIZE / 2;
-		    
-		    // Create energy gain text
-		    const energyText = document.createElement('div');
-		    energyText.className = 'attribute-change';
-		    energyText.style.left = `${blockX}px`;
-		    energyText.style.top = `${blockY}px`;
-		    energyText.textContent = `+${amount} Energy`;
-		    energyText.style.color = '#2ecc71'; // Green color
-		    
-		    document.querySelector('.game-container').appendChild(energyText);
-		    
-		    // Remove after animation completes
-		    setTimeout(() => {
-			energyText.remove();
-		    }, 1500);
-	}
+                const blockX = x * BLOCK_SIZE + BLOCK_SIZE / 2;
+                const blockY = y * BLOCK_SIZE + BLOCK_SIZE / 2;
+                
+                // Create energy gain text
+                const energyText = document.createElement('div');
+                energyText.className = 'attribute-change';
+                energyText.style.left = `${blockX}px`;
+                energyText.style.top = `${blockY}px`;
+                energyText.textContent = `+${amount} Energy`;
+                energyText.style.color = '#2ecc71'; // Green color
+                
+                document.querySelector('.game-container').appendChild(energyText);
+                
+                // Remove after animation completes
+                setTimeout(() => {
+                    energyText.remove();
+                }, 1500);
+            }
+            
             // Show critical hit effect
             function showCriticalHitEffect(x, y) {
                 const blockX = x * BLOCK_SIZE + BLOCK_SIZE / 2;
