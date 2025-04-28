@@ -1729,12 +1729,11 @@
                 requestAnimationFrame(moveCloud);
             }
             
-            // Create player
-            function createPlayer() {
+function createPlayer() {
                 const player = document.createElementNS('http://www.w3.org/2000/svg', 'g');
                 player.setAttribute('id', 'player');
                 
-                // Player body
+                // Player body (unchanged)
                 const body = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
                 body.setAttribute('x', 8);
                 body.setAttribute('y', 6);
@@ -1746,7 +1745,7 @@
                 body.setAttribute('rx', 4);
                 player.appendChild(body);
                 
-                // Player head
+                // Player head (unchanged)
                 const head = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                 head.setAttribute('cx', 16);
                 head.setAttribute('cy', 6);
@@ -1756,15 +1755,15 @@
                 head.setAttribute('stroke-width', '1');
                 player.appendChild(head);
                 
-                // Hat
+                // Hat (unchanged)
                 const hat = document.createElementNS('http://www.w3.org/2000/svg', 'path');
                 hat.setAttribute('d', 'M10,3 h12 v-2 a6,3 0 1,1 -12,0 z');
-                hat.setAttribute('fill', '#3498db');
-                hat.setAttribute('stroke', '#2980b9');
+                hat.setAttribute('fill', '#ffcf40');
+                hat.setAttribute('stroke', '#e6b800');
                 hat.setAttribute('stroke-width', '1');
                 player.appendChild(hat);
                 
-                // Headlamp on hat
+                // Headlamp on hat (unchanged)
                 const lamp = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                 lamp.setAttribute('cx', 16);
                 lamp.setAttribute('cy', 0.8);
@@ -1774,7 +1773,7 @@
                 lamp.setAttribute('stroke-width', '0.5');
                 player.appendChild(lamp);
                 
-                // Eyes
+                // Eyes (unchanged)
                 const leftEye = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                 leftEye.setAttribute('cx', 14);
                 leftEye.setAttribute('cy', 5);
@@ -1789,7 +1788,7 @@
                 rightEye.setAttribute('fill', '#333');
                 player.appendChild(rightEye);
                 
-                // Smile
+                // Smile (unchanged)
                 const mouth = document.createElementNS('http://www.w3.org/2000/svg', 'path');
                 mouth.setAttribute('d', 'M14,8 q2,2 4,0');
                 mouth.setAttribute('fill', 'none');
@@ -1797,36 +1796,45 @@
                 mouth.setAttribute('stroke-width', '0.7');
                 player.appendChild(mouth);
                 
-                // L-shaped pickaxe
+                // CORRECT pickaxe with head angled TOWARD player
                 const pickaxe = document.createElementNS('http://www.w3.org/2000/svg', 'g');
                 pickaxe.setAttribute('id', 'pickaxe');
                 
-                // Handle
-                const handle = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                handle.setAttribute('x1', 24);
-                handle.setAttribute('y1', 16);
-                handle.setAttribute('x2', 31);
-                handle.setAttribute('y2', 16);
-                handle.setAttribute('stroke', '#8B4513');
-                handle.setAttribute('stroke-width', '2');
+                // Wooden handle
+                const handle = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                handle.setAttribute('x', 24);
+                handle.setAttribute('y', 15);
+                handle.setAttribute('width', 10);
+                handle.setAttribute('height', 2);
+                handle.setAttribute('fill', '#8B4513');
+                handle.setAttribute('stroke', '#654321');
+                handle.setAttribute('stroke-width', '0.5');
+                handle.setAttribute('rx', '1');
                 pickaxe.appendChild(handle);
                 
-                // Metal L-shaped head
-                const pickHead = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                pickHead.setAttribute('d', 'M31,16 L31,12 L35,12');
-                pickHead.setAttribute('fill', 'none');
-                pickHead.setAttribute('stroke', '#A9A9A9');
-                pickHead.setAttribute('stroke-width', '2');
-                pickHead.setAttribute('stroke-linejoin', 'round');
-                pickaxe.appendChild(pickHead);
+                // Metal pickaxe head - top prong (angled TOWARD player)
+                const pickHeadTop = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                pickHeadTop.setAttribute('d', 'M34 15 L30 11 L32 10 L35 14 Z');
+                pickHeadTop.setAttribute('fill', '#A9A9A9');
+                pickHeadTop.setAttribute('stroke', '#555');
+                pickHeadTop.setAttribute('stroke-width', '0.5');
+                pickaxe.appendChild(pickHeadTop);
+                
+                // Metal pickaxe head - bottom prong (angled TOWARD player)
+                const pickHeadBottom = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                pickHeadBottom.setAttribute('d', 'M34 17 L30 21 L32 22 L35 18 Z');
+                pickHeadBottom.setAttribute('fill', '#A9A9A9');
+                pickHeadBottom.setAttribute('stroke', '#555');
+                pickHeadBottom.setAttribute('stroke-width', '0.5');
+                pickaxe.appendChild(pickHeadBottom);
                 
                 player.appendChild(pickaxe);
                 
-                // Face direction indicator (for game mechanics)
+                // Face direction indicator (unchanged)
                 const eye = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                 eye.setAttribute('id', 'player-eye');
                 eye.setAttribute('r', 1.5);
-                eye.setAttribute('fill', 'rgba(0,0,0,0)'); // Make invisible but keep for game mechanics
+                eye.setAttribute('fill', 'rgba(0,0,0,0)');
                 player.appendChild(eye);
                 
                 svg.appendChild(player);
@@ -1834,6 +1842,7 @@
                 
                 updatePlayerPosition();
             }
+            
             
             // Update player position
             function updatePlayerPosition() {
